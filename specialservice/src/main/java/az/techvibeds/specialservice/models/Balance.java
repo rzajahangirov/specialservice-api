@@ -19,5 +19,5 @@ public class Balance {
     private BigDecimal amount;
 
     @OneToOne(mappedBy = "balance")
-    private Customer customer;
+    private Partner partner;
 }

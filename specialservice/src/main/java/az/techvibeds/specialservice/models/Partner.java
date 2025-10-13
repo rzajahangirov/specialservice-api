@@ -1,5 +1,6 @@
 package az.techvibeds.specialservice.models;
 
+import az.techvibeds.specialservice.enums.PartnerType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -10,8 +11,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "customers")
-public class Customer {
+@Table(name = "partners")
+public class Partner {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -24,8 +25,8 @@ public class Customer {
     @JoinColumn(name = "balance_id")
     private Balance balance;
 
-    @ManyToOne
-    private CustomerType customerType;
+    @Enumerated(EnumType.STRING)
+    private PartnerType partnerType ;
 
     @ManyToOne
     private Company company;
