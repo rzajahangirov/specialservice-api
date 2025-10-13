@@ -5,20 +5,24 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "companyStock")
-public class CompanyStock {
+@Table(name = "assignees")
+public class Assignee {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private LocalDateTime monthDate;
-    private Long stockCount;
+    private String name;
+    private Integer activeServiceCount;
+    private Integer totalCapacity;
 
     @ManyToOne
     private Company company;
+
+    @OneToMany(mappedBy = "assignee")
+    private List<Activity> activities;
 }

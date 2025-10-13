@@ -1,5 +1,6 @@
 package az.techvibeds.specialservice.models;
 
+import az.techvibeds.specialservice.enums.ActivityStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,14 +12,18 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "companyStock")
-public class CompanyStock {
+@Table(name = "activities")
+public class Activity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private LocalDateTime monthDate;
-    private Long stockCount;
+    private String process;
+    private LocalDateTime startTime;
+
+    @Enumerated(EnumType.STRING)
+    private ActivityStatus activityStatus;
 
     @ManyToOne
-    private Company company;
+    private Assignee assignee;
+
 }
