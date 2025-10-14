@@ -3,6 +3,8 @@ package az.techvibeds.specialservice.services.impl;
 import az.techvibeds.specialservice.dtos.balace.CreateBalanceDto;
 import az.techvibeds.specialservice.dtos.partner.PartnerCreateDto;
 import az.techvibeds.specialservice.dtos.partner.PartnerDto;
+import az.techvibeds.specialservice.dtos.partner.PartnerReadDto;
+import az.techvibeds.specialservice.dtos.partner.PartnerUpdateDto;
 import az.techvibeds.specialservice.enums.PartnerType;
 import az.techvibeds.specialservice.models.Balance;
 import az.techvibeds.specialservice.models.Company;
@@ -154,5 +156,50 @@ public class PartnerServiceImpl implements PartnerService {
         }
 
 
+    }
+
+    @Override
+    public PartnerReadDto updatePartner(PartnerUpdateDto partnerUpdateDto) throws Exception {
+        Partner partner = partnerRepository.findById(partnerUpdateDto.getId()).orElseThrow(() -> new RuntimeException("Partner not found"));
+        if(partnerUpdateDto.getName() != null) partner.setName(partnerUpdateDto.getName());
+        if(partnerUpdateDto.getContactPerson() != null) partner.setContactPerson(partnerUpdateDto.getContactPerson());
+        if(partnerUpdateDto.getEmail() != null) partner.setEmail(partnerUpdateDto.getEmail());
+        if(partnerUpdateDto.getPhone() != null) partner.setPhone(partnerUpdateDto.getPhone());
+
+        Balance balance = new Balance();
+        if(partnerUpdateDto.getBalance() != null) balance.setAmount(partnerUpdateDto.getBalance());
+        if(partnerUpdateDto.getCurrency() != null) balance.setCurrencyType(partnerUpdateDto.getCurrency());
+        partner.setBalance(balance);
+        if (partnerUpdateDto.getCustomerType() != null) {
+            if (partnerUpdateDto.getCustomerType().toUpperCase().equals("CUSTOMER")) {
+                partner.setPartnerType(PartnerType.CUSTOMER);
+            } else if (partnerUpdateDto.getCustomerType().toUpperCase().equals("SUPPLIER")) {
+                partner.setPartnerType(PartnerType.SUPPLIER);
+            } else {
+                throw new Exception("Unknown partner");
+            }
+        }
+        partnerRepository.save(partner);
+
+        return mapToReadDto(partnerUpdateDto);
+    }
+
+    @Override
+    public void delete(Long id) {
+        Partner partner = partnerRepository.findById(id).orElseThrow(() -> new RuntimeException("Partner not found"));
+    partnerRepository.delete(partner);
+    }
+
+    private PartnerReadDto mapToReadDto(PartnerUpdateDto partnerUpdateDto) {
+        PartnerReadDto partnerReadDto = new PartnerReadDto();
+        partnerReadDto.setId(partnerUpdateDto.getId());
+        if(partnerUpdateDto.getName() != null) partnerReadDto.setName(partnerUpdateDto.getName());
+        if(partnerUpdateDto.getContactPerson() != null) partnerReadDto.setContactPerson(partnerUpdateDto.getContactPerson());
+        if(partnerUpdateDto.getEmail() != null) partnerReadDto.setEmail(partnerUpdateDto.getEmail());
+        if(partnerUpdateDto.getPhone() != null) partnerReadDto.setPhone(partnerUpdateDto.getPhone());
+        if (partnerUpdateDto.getBalance() != null) partnerReadDto.setBalance(partnerUpdateDto.getBalance());
+        if (partnerUpdateDto.getCurrency() != null) partnerReadDto.setCurrency(partnerUpdateDto.getCurrency());
+        if (partnerUpdateDto.getCustomerType() != null) partnerReadDto.setCustomerType(partnerUpdateDto.getCustomerType());
+        return partnerReadDto;
     }
 }
