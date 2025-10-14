@@ -17,7 +17,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/transactions")
+@RequestMapping("/api/transaction")
 //Satış və Alış İdarəetmə
 public class TransactionController {
     private final PartnerService partnerService;
