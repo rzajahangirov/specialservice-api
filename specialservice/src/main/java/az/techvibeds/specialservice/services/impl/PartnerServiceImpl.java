@@ -116,7 +116,7 @@ public class PartnerServiceImpl implements PartnerService {
         for (Row row : sheet) {
             if (row.getRowNum() == 0) continue;
 
-            // Yeni partner yarat
+
             Partner partner = new Partner();
             partner.setName(row.getCell(0).getStringCellValue());
             partner.setContactPerson(row.getCell(1).getStringCellValue());
