@@ -18,6 +18,4 @@ public class PartnerCreateDto {
     private String phone;
     private BigDecimal balance;
     private String currency;
-    private String customerType;
-    private Company company;
 }

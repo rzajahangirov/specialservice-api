@@ -28,178 +28,191 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class PartnerServiceImpl implements PartnerService {
+
     private final PartnerRepository partnerRepository;
     private final BalanceService balanceService;
     private final CompanyService companyService;
     private final ModelMapper modelMapper;
 
+
     @Override
-    public PartnerCreateDto createCustomer(PartnerCreateDto partnerCreateDto, String name) {
-        try{
-            Partner partner = new Partner();
-            partner.setName(partnerCreateDto.getName());
-            partner.setContactPerson(partnerCreateDto.getContactPerson());
-            partner.setEmail(partnerCreateDto.getEmail());
-            partner.setPhone(partnerCreateDto.getPhone());
-
-            CreateBalanceDto balanceDto = new CreateBalanceDto();
-            balanceDto.setAmount(partnerCreateDto.getBalance());
-            balanceDto.setCurrencyType(partnerCreateDto.getCurrency());
-            balanceDto.setPartner(partner);
-            Balance balance = balanceService.createBalace(balanceDto);
-            partner.setBalance(balance);
-
-            partner.setPartnerType(PartnerType.CUSTOMER);
-
-            Company company = companyService.findByUserEmail(name);
-            partner.setCompany(company);
-            partnerRepository.save(partner);
-            return partnerCreateDto;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
-
+    public PartnerCreateDto createCustomer(PartnerCreateDto dto, String userEmail) {
+        return createPartner(dto, PartnerType.CUSTOMER, userEmail);
     }
 
     @Override
-    public PartnerCreateDto createSupplier(PartnerCreateDto partnerCreateDto, String name) {
-        try{
-            Partner partner = new Partner();
-            partner.setName(partnerCreateDto.getName());
-            partner.setContactPerson(partnerCreateDto.getContactPerson());
-            partner.setEmail(partnerCreateDto.getEmail());
-            partner.setPhone(partnerCreateDto.getPhone());
-
-            CreateBalanceDto balanceDto = new CreateBalanceDto();
-            balanceDto.setAmount(partnerCreateDto.getBalance());
-            balanceDto.setCurrencyType(partnerCreateDto.getCurrency());
-            balanceDto.setPartner(partner);
-            Balance balance = balanceService.createBalace(balanceDto);
-            partner.setBalance(balance);
-
-            partner.setPartnerType(PartnerType.SUPPLIER);
-
-            Company company = companyService.findByUserEmail(name);
-            partner.setCompany(company);
-
-            partnerRepository.save(partner);
-            return partnerCreateDto;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    public PartnerCreateDto createSupplier(PartnerCreateDto dto, String userEmail) {
+        return createPartner(dto, PartnerType.SUPPLIER, userEmail);
     }
 
+    private PartnerCreateDto createPartner(PartnerCreateDto dto, PartnerType type, String userEmail) {
+        Partner partner = mapCreateDtoToPartner(dto);
+        partner.setPartnerType(type);
+        partner.setCompany(companyService.findByUserEmail(userEmail));
+
+        Balance balance = createBalanceForPartner(dto, partner);
+        partner.setBalance(balance);
+
+        partnerRepository.save(partner);
+        return dto;
+    }
+
+    private Partner mapCreateDtoToPartner(PartnerCreateDto dto) {
+        Partner partner = new Partner();
+        partner.setName(dto.getName());
+        partner.setContactPerson(dto.getContactPerson());
+        partner.setEmail(dto.getEmail());
+        partner.setPhone(dto.getPhone());
+        return partner;
+    }
+
+    private Balance createBalanceForPartner(PartnerCreateDto dto, Partner partner) {
+        CreateBalanceDto balanceDto = new CreateBalanceDto();
+        balanceDto.setPartner(partner);
+        balanceDto.setAmount(dto.getBalance());
+        balanceDto.setCurrencyType(dto.getCurrency());
+        return balanceService.createBalance(balanceDto);
+    }
+
+
     @Override
-    public List<PartnerDto> getPartners(String name) {
-        Company company = companyService.findByUserEmail(name);
-        List<Partner> partnerList = partnerRepository.findAllByCompanyId(company.getId());
-        List<PartnerDto> partnerDtoList = new ArrayList<>();
-        for (Partner partner : partnerList) {
-            PartnerDto partnerDto = new PartnerDto();
-            partnerDto.setName(partner.getName());
-            partnerDto.setContactPerson(partner.getContactPerson());
-            partnerDto.setEmail(partner.getEmail());
-            partnerDto.setPhone(partner.getPhone());
-            partnerDto.setCurrency(partner.getBalance().getCurrencyType());
-            partnerDto.setBalance(partner.getBalance().getAmount());
+    public List<PartnerDto> getPartners(String userEmail) {
+        Company company = companyService.findByUserEmail(userEmail);
+        List<Partner> partners = partnerRepository.findAllByCompanyId(company.getId());
+        List<PartnerDto> partnerDtos = new ArrayList<>();
+
+        for (Partner partner : partners) {
+            PartnerDto dto = new PartnerDto();
+            dto.setName(partner.getName());
+            dto.setContactPerson(partner.getContactPerson());
+            dto.setEmail(partner.getEmail());
+            dto.setPhone(partner.getPhone());
+            dto.setBalance(partner.getBalance().getAmount());
+            dto.setCurrency(partner.getBalance().getCurrencyType());
+
             String partnerType = partner.getPartnerType().toString();
-            partnerType = partnerType.substring(0, 1).toUpperCase() + partnerType.substring(1).toLowerCase();
-            partnerDto.setPartnerType(partnerType);
-            partnerDtoList.add(partnerDto);
+            dto.setPartnerType(partnerType.substring(0, 1).toUpperCase() + partnerType.substring(1).toLowerCase());
+
+            partnerDtos.add(dto);
         }
 
-        return partnerDtoList;
+        return partnerDtos;
     }
 
+
     @Override
-    public void importFromExcel(MultipartFile file, String name) throws Exception {
+    public void importFromExcel(MultipartFile file, String userEmail) throws Exception {
         Workbook workbook = new XSSFWorkbook(file.getInputStream());
         Sheet sheet = workbook.getSheetAt(0);
+
         Map<String, String> currencyMap = Map.of(
                 "₼", "manat",
                 "$", "USD",
                 "€", "EUR"
         );
-        Company company = companyService.findByUserEmail(name);
+
+        Company company = companyService.findByUserEmail(userEmail);
+
         for (Row row : sheet) {
             if (row.getRowNum() == 0) continue;
+
+            // Yeni partner yarat
             Partner partner = new Partner();
             partner.setName(row.getCell(0).getStringCellValue());
             partner.setContactPerson(row.getCell(1).getStringCellValue());
             partner.setEmail(row.getCell(2).getStringCellValue());
             partner.setPhone(row.getCell(3).getStringCellValue());
-
-            CreateBalanceDto balanceDto = new CreateBalanceDto();
-            balanceDto.setPartner(partner);
-            if (row.getCell(4).getCellType() == CellType.NUMERIC) {
-                CellStyle style = row.getCell(4).getCellStyle();
-                String formatString = style.getDataFormatString();
-                String currencyType = formatString.replaceAll("[#,0.]+", "").trim();
-                currencyType = currencyMap.getOrDefault(currencyType, "UNKNOWN");
-                balanceDto.setCurrencyType(currencyType);
-                balanceDto.setAmount(BigDecimal.valueOf(row.getCell(4).getNumericCellValue()));
-            }else{
-                throw new Exception("The Excel columns are not correct.");
-            }
-            balanceService.createBalace(balanceDto);
-
-            if (row.getCell(5).toString().toUpperCase().equals("CUSTOMER")) {
-                partner.setPartnerType(PartnerType.CUSTOMER);
-            }else if (row.getCell(5).toString().toUpperCase().equals("SUPPLIER")) {
-                partner.setPartnerType(PartnerType.SUPPLIER);
-            }else{
-                throw new Exception("Unknown partner");
-            }
+            partner.setPartnerType(parsePartnerTypeFromRow(row.getCell(5).getStringCellValue()));
             partner.setCompany(company);
+
+
+            partnerRepository.save(partner);
+
+
+            Balance balance = parseBalanceFromRow(row, partner, currencyMap);
+            partner.setBalance(balance);
+
+
             partnerRepository.save(partner);
         }
-
-
     }
 
-    @Override
-    public PartnerReadDto updatePartner(PartnerUpdateDto partnerUpdateDto) throws Exception {
-        Partner partner = partnerRepository.findById(partnerUpdateDto.getId()).orElseThrow(() -> new RuntimeException("Partner not found"));
-        if(partnerUpdateDto.getName() != null) partner.setName(partnerUpdateDto.getName());
-        if(partnerUpdateDto.getContactPerson() != null) partner.setContactPerson(partnerUpdateDto.getContactPerson());
-        if(partnerUpdateDto.getEmail() != null) partner.setEmail(partnerUpdateDto.getEmail());
-        if(partnerUpdateDto.getPhone() != null) partner.setPhone(partnerUpdateDto.getPhone());
+    private Balance parseBalanceFromRow(Row row, Partner partner, Map<String, String> currencyMap) throws Exception {
+        Cell cell = row.getCell(4);
+        if (cell.getCellType() != CellType.NUMERIC) {
+            throw new Exception("The Excel columns are not correct.");
+        }
+
+        CellStyle style = cell.getCellStyle();
+        String formatString = style.getDataFormatString();
+        String currencyType = formatString.replaceAll("[#,0.]+", "").trim();
+        currencyType = currencyMap.getOrDefault(currencyType, "UNKNOWN");
 
         Balance balance = new Balance();
-        if(partnerUpdateDto.getBalance() != null) balance.setAmount(partnerUpdateDto.getBalance());
-        if(partnerUpdateDto.getCurrency() != null) balance.setCurrencyType(partnerUpdateDto.getCurrency());
-        partner.setBalance(balance);
-        if (partnerUpdateDto.getCustomerType() != null) {
-            if (partnerUpdateDto.getCustomerType().toUpperCase().equals("CUSTOMER")) {
-                partner.setPartnerType(PartnerType.CUSTOMER);
-            } else if (partnerUpdateDto.getCustomerType().toUpperCase().equals("SUPPLIER")) {
-                partner.setPartnerType(PartnerType.SUPPLIER);
-            } else {
-                throw new Exception("Unknown partner");
-            }
+        balance.setAmount(BigDecimal.valueOf(cell.getNumericCellValue()));
+        balance.setCurrencyType(currencyType);
+        balance.setPartner(partner);
+
+        return balance;
+    }
+
+    private PartnerType parsePartnerTypeFromRow(String type) throws Exception {
+        if ("CUSTOMER".equalsIgnoreCase(type)) {
+            return PartnerType.CUSTOMER;
+        } else if ("SUPPLIER".equalsIgnoreCase(type)) {
+            return PartnerType.SUPPLIER;
+        } else {
+            throw new Exception("Unknown partner type: " + type);
         }
+    }
+
+
+
+    @Override
+    public PartnerReadDto updatePartner(PartnerUpdateDto dto) throws Exception {
+        Partner partner = partnerRepository.findById(dto.getId())
+                .orElseThrow(() -> new RuntimeException("Partner not found"));
+
+        if (dto.getName() != null) partner.setName(dto.getName());
+        if (dto.getContactPerson() != null) partner.setContactPerson(dto.getContactPerson());
+        if (dto.getEmail() != null) partner.setEmail(dto.getEmail());
+        if (dto.getPhone() != null) partner.setPhone(dto.getPhone());
+
+        if (dto.getBalance() != null || dto.getCurrency() != null) {
+            Balance balance = new Balance();
+            if (dto.getBalance() != null) balance.setAmount(dto.getBalance());
+            if (dto.getCurrency() != null) balance.setCurrencyType(dto.getCurrency());
+            partner.setBalance(balance);
+        }
+
+        if (dto.getCustomerType() != null) {
+            partner.setPartnerType(parsePartnerTypeFromRow(dto.getCustomerType()));
+        }
+
         partnerRepository.save(partner);
 
-        return mapToReadDto(partnerUpdateDto);
+        return mapToReadDto(dto);
     }
+
 
     @Override
     public void delete(Long id) {
-        Partner partner = partnerRepository.findById(id).orElseThrow(() -> new RuntimeException("Partner not found"));
-    partnerRepository.delete(partner);
+        Partner partner = partnerRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Partner not found"));
+        partnerRepository.delete(partner);
     }
 
-    private PartnerReadDto mapToReadDto(PartnerUpdateDto partnerUpdateDto) {
-        PartnerReadDto partnerReadDto = new PartnerReadDto();
-        partnerReadDto.setId(partnerUpdateDto.getId());
-        if(partnerUpdateDto.getName() != null) partnerReadDto.setName(partnerUpdateDto.getName());
-        if(partnerUpdateDto.getContactPerson() != null) partnerReadDto.setContactPerson(partnerUpdateDto.getContactPerson());
-        if(partnerUpdateDto.getEmail() != null) partnerReadDto.setEmail(partnerUpdateDto.getEmail());
-        if(partnerUpdateDto.getPhone() != null) partnerReadDto.setPhone(partnerUpdateDto.getPhone());
-        if (partnerUpdateDto.getBalance() != null) partnerReadDto.setBalance(partnerUpdateDto.getBalance());
-        if (partnerUpdateDto.getCurrency() != null) partnerReadDto.setCurrency(partnerUpdateDto.getCurrency());
-        if (partnerUpdateDto.getCustomerType() != null) partnerReadDto.setCustomerType(partnerUpdateDto.getCustomerType());
-        return partnerReadDto;
+
+    private PartnerReadDto mapToReadDto(PartnerUpdateDto dto) {
+        PartnerReadDto readDto = new PartnerReadDto();
+        readDto.setId(dto.getId());
+        readDto.setName(dto.getName());
+        readDto.setContactPerson(dto.getContactPerson());
+        readDto.setEmail(dto.getEmail());
+        readDto.setPhone(dto.getPhone());
+        readDto.setBalance(dto.getBalance());
+        readDto.setCurrency(dto.getCurrency());
+        readDto.setCustomerType(dto.getCustomerType());
+        return readDto;
     }
 }

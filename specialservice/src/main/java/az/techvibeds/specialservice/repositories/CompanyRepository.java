@@ -5,5 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface CompanyRepository extends JpaRepository<Company, Long> {
 
-    Company findByUserId(Long id);
+    Company findByUsers_Id(Long userId);
 }

@@ -17,9 +17,7 @@ import org.springframework.stereotype.Service;
 public class UserServiceImpl implements UserService {
     private final ModelMapper modelMapper;
     private final UserRepository userRepository;
-    private final RoleService roleService;
     private final PasswordEncoder passwordEncoder;
-    private final CompanyService companyService;
 
     @Override
     public User findByEmail(String name) {

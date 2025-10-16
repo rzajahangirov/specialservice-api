@@ -2,6 +2,7 @@ package az.techvibeds.specialservice.services.impl;
 
 import az.techvibeds.specialservice.dtos.balace.CreateBalanceDto;
 import az.techvibeds.specialservice.models.Balance;
+import az.techvibeds.specialservice.models.Partner;
 import az.techvibeds.specialservice.repositories.BalanceRepository;
 import az.techvibeds.specialservice.services.BalanceService;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +16,7 @@ public class BalanceServiceImpl implements BalanceService {
     private final BalanceRepository balanceRepository;
 
     @Override
-    public Balance createBalace(CreateBalanceDto balanceDto) {
+    public Balance createBalance(CreateBalanceDto balanceDto) {
         try{
             Balance balance = modelMapper.map(balanceDto, Balance.class);
             balanceRepository.save(balance);

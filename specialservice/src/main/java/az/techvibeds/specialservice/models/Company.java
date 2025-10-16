@@ -25,7 +25,7 @@ public class Company {
     @OneToMany(mappedBy = "company")
     private List<User> users = new ArrayList<>();
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
             name = "companies_modules",
             joinColumns = {@JoinColumn(name = "company_id", referencedColumnName = "id")},

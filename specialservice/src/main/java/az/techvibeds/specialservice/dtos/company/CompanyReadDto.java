@@ -2,7 +2,6 @@ package az.techvibeds.specialservice.dtos.company;
 
 import az.techvibeds.specialservice.dtos.user.UserReadDto;
 import az.techvibeds.specialservice.dtos.module.ModuleReadDto;
-import az.techvibeds.specialservice.dtos.product.ProductReadDto;
 import lombok.*;
 
 import java.util.Date;
@@ -21,5 +20,4 @@ public class CompanyReadDto {
 
     private List<UserReadDto> users;
     private Set<ModuleReadDto> modules;
-    private List<ProductReadDto> products;
 }

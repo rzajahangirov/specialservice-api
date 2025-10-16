@@ -31,7 +31,7 @@ public class CompanyServiceImpl implements CompanyService {
     @Override
     public Company findByUserEmail(String name) {
         User findUser = userService.findByEmail(name);
-        Company company = companyRepository.findByUserId(findUser.getId());
+        Company company = companyRepository.findByUsers_Id(findUser.getId());
         return company;
     }
     @Override

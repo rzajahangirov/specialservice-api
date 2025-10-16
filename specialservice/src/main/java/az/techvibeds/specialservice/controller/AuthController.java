@@ -58,7 +58,7 @@ public class AuthController {
             throw new UsernameNotFoundException("invalid user request..!!");
         }
 
-//        refreshTokenService.removeToken(authRequestDTO.getEmail());
+        refreshTokenService.removeToken(authRequestDTO.getEmail());
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequestDTO.getEmail(), authRequestDTO.getPassword()));
         if(authentication.isAuthenticated()){
             RefreshToken refreshToken = refreshTokenService.createRefreshToken(authRequestDTO.getEmail());
