@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -28,8 +30,8 @@ public class Product {
     @Enumerated(EnumType.STRING)
     private ProductStatus productStatus;
 
-    @ManyToOne
-    private Warehouse warehouse;
+    @OneToMany(mappedBy = "product")
+    private List<WarehouseProduct> warehouseProducts = new ArrayList<>();
 
     @ManyToOne
     private Company company;

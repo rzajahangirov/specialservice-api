@@ -21,8 +21,11 @@ public class Warehouse {
     private String address;
 
     @OneToMany(mappedBy = "warehouse")
-    private List<Product> products = new ArrayList<>();
+    private List<WarehouseProduct> warehouseProducts = new ArrayList<>();
 
     @ManyToOne
     private Company company;
+
+    @ManyToMany
+    private List<WarehouseActivity> warehouseActivity;
 }

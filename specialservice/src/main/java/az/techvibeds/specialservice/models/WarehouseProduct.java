@@ -6,22 +6,26 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "companyStock")
-public class CompanyStock {
+@Table(name = "warehouse_products")
+public class WarehouseProduct {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private LocalDate date;
-    private Long stockCount;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "company_id", referencedColumnName = "id")
-    private Company company;
+    @ManyToOne
+    @JoinColumn(name = "warehouse_id")
+    private Warehouse warehouse;
 
+    @ManyToOne
+    @JoinColumn(name = "product_id")
+    private Product product;
+
+    private Integer quantity;
+
+    private LocalDate lastUpdated;
 }

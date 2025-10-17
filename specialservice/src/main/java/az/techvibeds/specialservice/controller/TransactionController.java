@@ -37,7 +37,7 @@ public class TransactionController {
     }
 
     // Musderiler ve Techizatcilar list
-    @GetMapping("/partners")
+    @GetMapping
     public ResponseEntity<List<PartnerDto>> getPartners(Principal principal) {
         List<PartnerDto> partnerDto = partnerService.getPartners(principal.getName());
         return new ResponseEntity<>(partnerDto, HttpStatus.OK);
