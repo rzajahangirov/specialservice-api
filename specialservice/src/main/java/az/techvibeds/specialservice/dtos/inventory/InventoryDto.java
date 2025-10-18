@@ -1,6 +1,9 @@
 package az.techvibeds.specialservice.dtos.inventory;
 
+import az.techvibeds.specialservice.dtos.product.ProductInventoryDto;
 import lombok.*;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -9,6 +12,8 @@ import lombok.*;
 @Builder
 public class InventoryDto {
     private Long stockCount;
-    private Double growthRate;
-
+    private String growthRate;
+    private Integer productCount;
+    private String lastTransfer;
+    private List<ProductInventoryDto> productInventoryDtoList;
 }

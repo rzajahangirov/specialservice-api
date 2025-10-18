@@ -2,7 +2,7 @@ package az.techvibeds.specialservice.dtos.companyStock;
 
 import lombok.*;
 
-import java.time.LocalDate;
+
 
 
 @Getter
@@ -11,6 +11,6 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @Builder
 public class CompanyStockInventoryDto {
-    private LocalDate monthDate;
     private Long stockCount;
+    private String growthRate;
 }

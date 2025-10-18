@@ -33,6 +33,7 @@ public class Product {
     @OneToMany(mappedBy = "product")
     private List<WarehouseProduct> warehouseProducts = new ArrayList<>();
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "company_id", referencedColumnName = "id")
     private Company company;
 }

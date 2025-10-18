@@ -14,4 +14,6 @@ public interface CompanyService {
     void delete(Long id);
     CompanyReadDto getById(Long id);
     List<CompanyReadDto> getAll();
+
+    List<Company> findAll();
 }

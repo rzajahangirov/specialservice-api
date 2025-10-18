@@ -88,6 +88,11 @@ public class CompanyServiceImpl implements CompanyService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public List<Company> findAll() {
+        return companyRepository.findAll();
+    }
+
     private CompanyReadDto mapToReadDto(Company company) {
         CompanyReadDto dto = new CompanyReadDto();
         dto.setId(company.getId());

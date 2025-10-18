@@ -27,5 +27,4 @@ public class WarehouseProduct {
 
     private Integer quantity;
 
-    private LocalDate lastUpdated;
 }
