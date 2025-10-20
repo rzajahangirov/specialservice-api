@@ -14,7 +14,7 @@ public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
 
     @Override
-    public Category findByName(String stringCellValue) {
-        return categoryRepository.findByName(stringCellValue);
+    public Category findByName(String name) {
+        return categoryRepository.findByName(name);
     }
 }

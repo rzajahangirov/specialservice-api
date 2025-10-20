@@ -6,6 +6,7 @@ import az.techvibeds.specialservice.dtos.partner.PartnerReadDto;
 import az.techvibeds.specialservice.dtos.partner.PartnerUpdateDto;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
 import java.util.List;
 
 public interface PartnerService {
@@ -20,4 +21,6 @@ public interface PartnerService {
     PartnerReadDto updatePartner(PartnerUpdateDto partnerUpdateDto) throws Exception;
 
     void delete(Long id);
+
+    ByteArrayInputStream exportToExcel(String name) throws Exception;
 }

@@ -2,6 +2,7 @@ package az.techvibeds.specialservice.controller;
 
 import az.techvibeds.specialservice.dtos.companyStock.CompanyStockInventoryDto;
 import az.techvibeds.specialservice.dtos.inventory.InventoryDto;
+import az.techvibeds.specialservice.dtos.product.ProductCreateDto;
 import az.techvibeds.specialservice.dtos.product.ProductInventoryDto;
 import az.techvibeds.specialservice.services.*;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ public class InventoryController {
     private final ProductService productService;
     private final WarehouseActivityService warehouseActivityService;
     private final CompanyService companyService;
+    private final WarehouseProductService warehouseProductService;
 
     //Melumatlarin getirilmesi
     @GetMapping
@@ -47,10 +49,42 @@ public class InventoryController {
         return ResponseEntity.ok(inventoryDto);
     }
 
+
     //Excelden import
     @PostMapping("/upload-products")
     public ResponseEntity<String> uploadExcel(@RequestParam("file") MultipartFile file, Principal principal) throws Exception {
         productService.uploadProductsFromExcel(file,companyService.findByUserEmail(principal.getName()));
         return ResponseEntity.ok("Excel successfully uploaded and saved to DB!");
     }
+
+    //Anbara qeydiyyat
+    @PostMapping("inventory-record")
+    public ResponseEntity<ProductCreateDto> inventoryRecord(@RequestBody ProductCreateDto productCreateDto, Principal principal) throws Exception {
+        ProductCreateDto created = productService.createProductAndInventoryRecord(productCreateDto,companyService.findByUserEmail(principal.getName()));
+        return ResponseEntity.ok(created);
+    }
+    //Anbardan cixis
+    @PostMapping("/inventory-remove")
+    public ResponseEntity<String> removeFromWarehouse(@RequestParam String productCode, @RequestParam String warehouseName, @RequestParam Integer quantity, Principal principal) throws Exception {
+        try {
+            warehouseProductService.removeFromWarehouse(productCode, warehouseName, quantity,companyService.findByUserEmail(principal.getName()));
+            return ResponseEntity.ok("Product removed from warehouse successfully.");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    //transfer
+    @PostMapping("/warehouse/transfer")
+    public ResponseEntity<String> transferProduct(@RequestParam String productCode, @RequestParam String fromWarehouse, @RequestParam String toWarehouse, @RequestParam int quantity) {
+        try {
+            warehouseProductService.transferProductBetweenWarehouses(productCode, fromWarehouse, toWarehouse, quantity);
+            return ResponseEntity.ok("Product successfully transferred from " + fromWarehouse + " to " + toWarehouse);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+
+
 }

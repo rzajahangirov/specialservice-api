@@ -20,6 +20,8 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -200,6 +202,55 @@ public class PartnerServiceImpl implements PartnerService {
         Partner partner = partnerRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Partner not found"));
         partnerRepository.delete(partner);
+    }
+
+    @Override
+    public ByteArrayInputStream exportToExcel(String userEmail) throws Exception {
+        Company company = companyService.findByUserEmail(userEmail);
+        List<Partner> partners = partnerRepository.findAllByCompany(company);
+
+        try (Workbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("Partners");
+
+            // Başlıqlar
+            Row headerRow = sheet.createRow(0);
+            String[] headers = {"Name", "Contact Person", "Email", "Phone", "Balance", "Currency", "Partner Type"};
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+            }
+
+            int rowIdx = 1;
+            for (Partner partner : partners) {
+                Row row = sheet.createRow(rowIdx++);
+
+                row.createCell(0).setCellValue(partner.getName());
+                row.createCell(1).setCellValue(partner.getContactPerson());
+                row.createCell(2).setCellValue(partner.getEmail());
+                row.createCell(3).setCellValue(partner.getPhone());
+
+                // Balance məlumatı varsa
+                Balance balance = partner.getBalance();
+                if (balance != null) {
+                    row.createCell(4).setCellValue(balance.getAmount().doubleValue());
+                    row.createCell(5).setCellValue(balance.getCurrencyType());
+                } else {
+                    row.createCell(4).setCellValue(0);
+                    row.createCell(5).setCellValue("UNKNOWN");
+                }
+
+                row.createCell(6).setCellValue(partner.getPartnerType().toString());
+            }
+
+            // Avtomatik sütun eni
+            for (int i = 0; i < headers.length; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            workbook.write(out);
+            return new ByteArrayInputStream(out.toByteArray());
+        }
     }
 
 

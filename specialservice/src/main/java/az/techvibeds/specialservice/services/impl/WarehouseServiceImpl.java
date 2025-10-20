@@ -1,5 +1,6 @@
 package az.techvibeds.specialservice.services.impl;
 
+import az.techvibeds.specialservice.models.Company;
 import az.techvibeds.specialservice.models.Warehouse;
 import az.techvibeds.specialservice.models.WarehouseProduct;
 import az.techvibeds.specialservice.repositories.WarehouseRepository;
@@ -27,5 +28,10 @@ public class WarehouseServiceImpl implements WarehouseService {
     @Override
     public List<WarehouseProduct> findAllByCompany_Id(Long companyId) {
         return warehouseRepository.findByCompany_Id(companyId);
+    }
+
+    @Override
+    public Warehouse getWarehouseByNameAndCompanyId(String warehouseName, Company company) {
+        return warehouseRepository.findByNameAndCompany(warehouseName, company);
     }
 }

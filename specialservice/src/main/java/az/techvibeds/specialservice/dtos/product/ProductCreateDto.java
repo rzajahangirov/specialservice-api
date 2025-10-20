@@ -5,17 +5,17 @@ import lombok.*;
 
 import java.math.BigDecimal;
 
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ProductInventoryDto {
-    private String productCode;
+public class ProductCreateDto {
     private String name;
-    private Integer stock;
+    private String productCode;
+    private Long stock;
     private BigDecimal price;
-    private String warehouse;
     private String category;
     private String productStatus;
+    private String warehouseName;
+    private Integer quantity;
 }

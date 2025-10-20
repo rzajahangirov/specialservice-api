@@ -7,11 +7,13 @@ import az.techvibeds.specialservice.dtos.partner.PartnerUpdateDto;
 import az.techvibeds.specialservice.payloads.ApiResponse;
 import az.techvibeds.specialservice.services.PartnerService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
 import java.security.Principal;
 import java.util.List;
 
@@ -49,6 +51,18 @@ public class TransactionController {
         partnerService.importFromExcel(file, principal.getName());
         return ResponseEntity.ok("Excel successfully uploaded and saved to DB!");
     }
+
+    //export
+    @GetMapping("/export-partners")
+    public ResponseEntity<byte[]> exportPartnersToExcel(Principal principal) throws Exception {
+        ByteArrayInputStream in = partnerService.exportToExcel(principal.getName());
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Disposition", "attachment; filename=partners.xlsx");
+
+        return ResponseEntity.ok().headers(headers).body(in.readAllBytes());
+    }
+
 
     // Update partner elements
     @PutMapping("update-partner")
