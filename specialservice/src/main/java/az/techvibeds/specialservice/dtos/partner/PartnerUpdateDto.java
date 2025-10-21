@@ -1,6 +1,6 @@
 package az.techvibeds.specialservice.dtos.partner;
 
-import az.techvibeds.specialservice.models.Company;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

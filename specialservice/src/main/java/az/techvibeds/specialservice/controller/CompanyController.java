@@ -11,6 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/company")
@@ -41,7 +43,7 @@ public class CompanyController {
     }
 
     @GetMapping
-    public ResponseEntity<java.util.List<CompanyReadDto>> getAll(){
+    public ResponseEntity<List<CompanyReadDto>> getAll(){
         return ResponseEntity.ok(companyService.getAll());
     }
 }

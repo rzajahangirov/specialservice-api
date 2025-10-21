@@ -2,7 +2,9 @@ package az.techvibeds.specialservice.services;
 
 import az.techvibeds.specialservice.dtos.product.ProductCreateDto;
 import az.techvibeds.specialservice.dtos.product.ProductInventoryDto;
+import az.techvibeds.specialservice.dtos.product.ProductInventoryUpdateDto;
 import az.techvibeds.specialservice.models.Company;
+import az.techvibeds.specialservice.models.Product;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -17,4 +19,8 @@ public interface ProductService {
     void uploadProductsFromExcel(MultipartFile file, Company company) throws Exception;
 
     ProductCreateDto createProductAndInventoryRecord(ProductCreateDto productCreateDto, Company byUserEmail) throws Exception;
+
+    void updateInventorProduct(ProductInventoryUpdateDto productInventoryUpdateDto) throws Exception;
+
+    void updateStockMinus(Integer quantity, Product product);
 }

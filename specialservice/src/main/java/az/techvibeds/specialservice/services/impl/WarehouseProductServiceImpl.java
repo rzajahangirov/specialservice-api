@@ -7,6 +7,8 @@ import az.techvibeds.specialservice.models.Warehouse;
 import az.techvibeds.specialservice.models.WarehouseProduct;
 import az.techvibeds.specialservice.repositories.ProductRepository;
 import az.techvibeds.specialservice.repositories.WarehouseProductRepository;
+import az.techvibeds.specialservice.repositories.WarehouseRepository;
+import az.techvibeds.specialservice.services.ProductService;
 import az.techvibeds.specialservice.services.WarehouseProductService;
 import az.techvibeds.specialservice.services.WarehouseService;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +20,8 @@ public class WarehouseProductServiceImpl implements WarehouseProductService {
     private final WarehouseProductRepository warehouseProductRepository;
     private final WarehouseService warehouseService;
     private final ProductRepository productRepository;
+    private final WarehouseRepository warehouseRepository;
+    private final ProductService productService;
 
     @Override
     public WarehouseProduct createWarehouseProduct(Product product, String warehouseName, double quantity) {
@@ -105,5 +109,28 @@ public class WarehouseProductServiceImpl implements WarehouseProductService {
 
         warehouseProductRepository.save(fromWarehouseProduct);
         warehouseProductRepository.save(toWarehouseProduct);
+    }
+
+    @Override
+    public Integer updateInventarWarehouseProduct(WarehouseProduct warehouseProduct, String warehouse, Integer stock) {
+        WarehouseProduct warehouseProduct1 = warehouseProduct;
+        Integer nowQuantity = warehouseProduct.getQuantity();
+        warehouseProduct1.setQuantity(stock);
+        warehouseProduct1.setWarehouse(warehouseRepository.findByName(warehouse));
+        warehouseProductRepository.save(warehouseProduct1);
+        return nowQuantity;
+    }
+
+    @Override
+    public WarehouseProduct findWarehouseProductById(Long id) {
+        return warehouseProductRepository.findById(id).orElseThrow();
+    }
+
+    @Override
+    public void deleteWarehouseProduct(Long id) {
+        WarehouseProduct warehouseProduct = findWarehouseProductById(id);
+        productService.updateStockMinus(warehouseProduct.getQuantity(),warehouseProduct.getProduct());
+        warehouseProductRepository.deleteById(id);
+
     }
 }

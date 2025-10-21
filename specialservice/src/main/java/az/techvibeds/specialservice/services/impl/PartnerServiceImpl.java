@@ -85,6 +85,7 @@ public class PartnerServiceImpl implements PartnerService {
 
         for (Partner partner : partners) {
             PartnerDto dto = new PartnerDto();
+            dto.setId(partner.getId());
             dto.setName(partner.getName());
             dto.setContactPerson(partner.getContactPerson());
             dto.setEmail(partner.getEmail());

@@ -2,15 +2,13 @@ package az.techvibeds.specialservice.services.impl;
 
 import az.techvibeds.specialservice.dtos.product.ProductCreateDto;
 import az.techvibeds.specialservice.dtos.product.ProductInventoryDto;
+import az.techvibeds.specialservice.dtos.product.ProductInventoryUpdateDto;
 import az.techvibeds.specialservice.enums.ProductStatus;
 import az.techvibeds.specialservice.models.Company;
 import az.techvibeds.specialservice.models.Product;
 import az.techvibeds.specialservice.models.WarehouseProduct;
 import az.techvibeds.specialservice.repositories.ProductRepository;
-import az.techvibeds.specialservice.services.CategoryService;
-import az.techvibeds.specialservice.services.ProductService;
-import az.techvibeds.specialservice.services.WarehouseProductService;
-import az.techvibeds.specialservice.services.WarehouseService;
+import az.techvibeds.specialservice.services.*;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -32,6 +30,7 @@ public class ProductServiceImpl implements ProductService {
     private final WarehouseService warehouseService;
     private final CategoryService categoryService;
     private final WarehouseProductService warehouseProductService;
+    private final CompanyService companyService;
 
     @Override
     public Long calculateCompanyStock(Long companyId) {
@@ -56,6 +55,7 @@ public class ProductServiceImpl implements ProductService {
         for (WarehouseProduct warehouseProduct : warehouseProductList) {
             ProductInventoryDto productInventoryDto = new ProductInventoryDto();
             Product product = warehouseProduct.getProduct();
+            productInventoryDto.setId(warehouseProduct.getId());
             productInventoryDto.setProductCode(product.getProductCode());
             productInventoryDto.setName(product.getName());
             productInventoryDto.setPrice(product.getPrice());
@@ -173,4 +173,38 @@ public class ProductServiceImpl implements ProductService {
         }
         return productCreateDto;
     }
+
+    @Override
+    public void updateInventorProduct(ProductInventoryUpdateDto productInventoryUpdateDto) throws Exception {
+        WarehouseProduct warehouseProduct = warehouseProductService.findWarehouseProductById(productInventoryUpdateDto.getId());
+        Product product = warehouseProduct.getProduct();
+        product.setName(productInventoryUpdateDto.getName());
+        product.setProductCode(productInventoryUpdateDto.getProductCode());
+        product.setPrice(productInventoryUpdateDto.getPrice());
+        product.setCategory(categoryService.findByName(productInventoryUpdateDto.getCategory()));
+
+        if (productInventoryUpdateDto.getProductStatus().toUpperCase().equals("IN STOCK") || productInventoryUpdateDto.getProductStatus().toUpperCase().equals("IN_STOCK")) {
+            product.setProductStatus(ProductStatus.IN_STOCK);
+        }else if (productInventoryUpdateDto.getProductStatus().toUpperCase().equals("LOW_STOCK") || productInventoryUpdateDto.getProductStatus().toUpperCase().equals("LOW_STOCK")) {
+            product.setProductStatus(ProductStatus.LOW_STOCK);
+        }else if (productInventoryUpdateDto.getProductStatus().toUpperCase().equals("INACTIVE")) {
+            product.setProductStatus(ProductStatus.INACTIVE);
+        }else {
+            throw new Exception(" product status not recognized");
+        }
+
+        Integer stock = warehouseProductService.updateInventarWarehouseProduct(warehouseProduct,productInventoryUpdateDto.getWarehouse(),productInventoryUpdateDto.getStock());
+
+        product.setStock(product.getStock()-stock+productInventoryUpdateDto.getStock());
+        productRepository.save(product);
+
+    }
+
+    @Override
+    public void updateStockMinus(Integer quantity, Product product) {
+        product.setStock(product.getStock()-quantity);
+        productRepository.save(product);
+    }
+
+
 }

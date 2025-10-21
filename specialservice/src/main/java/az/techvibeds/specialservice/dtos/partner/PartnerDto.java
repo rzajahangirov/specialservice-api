@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PartnerDto {
+    private Long id;
     private String name;
     private String ContactPerson;
     private String email;

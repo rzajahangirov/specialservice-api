@@ -4,6 +4,7 @@ import az.techvibeds.specialservice.dtos.companyStock.CompanyStockInventoryDto;
 import az.techvibeds.specialservice.dtos.inventory.InventoryDto;
 import az.techvibeds.specialservice.dtos.product.ProductCreateDto;
 import az.techvibeds.specialservice.dtos.product.ProductInventoryDto;
+import az.techvibeds.specialservice.dtos.product.ProductInventoryUpdateDto;
 import az.techvibeds.specialservice.services.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -85,6 +86,19 @@ public class InventoryController {
         }
     }
 
+    //update inventar
+    @PutMapping
+    public ResponseEntity<String> updateInventory(@RequestBody ProductInventoryUpdateDto productInventoryUpdateDto) throws Exception {
+        productService.updateInventorProduct(productInventoryUpdateDto);
+        return ResponseEntity.ok("Product updated successfully.");
+    }
 
+
+    //delete inventar
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteInventory(@PathVariable Long id) throws Exception {
+        warehouseProductService.deleteWarehouseProduct(id);
+        return ResponseEntity.ok("Product deleted successfully.");
+    }
 
 }

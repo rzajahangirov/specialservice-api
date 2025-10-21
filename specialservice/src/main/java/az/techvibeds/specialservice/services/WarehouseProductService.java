@@ -10,4 +10,10 @@ public interface WarehouseProductService {
     void removeFromWarehouse(String productCode, String warehouseName, Integer quantity, Company byUserEmail) throws Exception;
 
     void transferProductBetweenWarehouses(String productCode, String fromWarehouse, String toWarehouse, int quantity) throws Exception;
+
+    Integer updateInventarWarehouseProduct(WarehouseProduct warehouseProduct, String warehouse, Integer stock);
+
+    WarehouseProduct findWarehouseProductById(Long id);
+
+    void deleteWarehouseProduct(Long id);
 }
