@@ -30,7 +30,6 @@ public class ProductServiceImpl implements ProductService {
     private final WarehouseService warehouseService;
     private final CategoryService categoryService;
     private final WarehouseProductService warehouseProductService;
-    private final CompanyService companyService;
 
     @Override
     public Long calculateCompanyStock(Long companyId) {
@@ -200,11 +199,6 @@ public class ProductServiceImpl implements ProductService {
 
     }
 
-    @Override
-    public void updateStockMinus(Integer quantity, Product product) {
-        product.setStock(product.getStock()-quantity);
-        productRepository.save(product);
-    }
 
 
 }

@@ -1,7 +1,6 @@
 package az.techvibeds.specialservice.services;
 
-import az.techvibeds.specialservice.dtos.service.ServiceDescriptionDto;
-import az.techvibeds.specialservice.dtos.service.ServiceExecutionStatusDto;
+import az.techvibeds.specialservice.dtos.service.*;
 import az.techvibeds.specialservice.models.Company;
 
 import java.util.List;
@@ -13,4 +12,10 @@ public interface ServiceService {
     List<ServiceDescriptionDto> getServiceDescriptions(Company company);
 
     List<ServiceExecutionStatusDto> getServiceExecutionStatus(Company company);
+
+    ServiceReadDto createService(String email, ServiceCreateDto serviceCreateDto);
+
+    ServiceGetDataDto getCompanyServicesData(String email);
+
+    ServiceCreateGetDataDto getCreateServiceData(String email);
 }

@@ -21,7 +21,6 @@ public class WarehouseProductServiceImpl implements WarehouseProductService {
     private final WarehouseService warehouseService;
     private final ProductRepository productRepository;
     private final WarehouseRepository warehouseRepository;
-    private final ProductService productService;
 
     @Override
     public WarehouseProduct createWarehouseProduct(Product product, String warehouseName, double quantity) {
@@ -129,8 +128,10 @@ public class WarehouseProductServiceImpl implements WarehouseProductService {
     @Override
     public void deleteWarehouseProduct(Long id) {
         WarehouseProduct warehouseProduct = findWarehouseProductById(id);
-        productService.updateStockMinus(warehouseProduct.getQuantity(),warehouseProduct.getProduct());
+        Product product = warehouseProduct.getProduct();
+        product.setStock(product.getStock() - warehouseProduct.getQuantity());
+        productRepository.save(product);
         warehouseProductRepository.deleteById(id);
-
     }
+
 }

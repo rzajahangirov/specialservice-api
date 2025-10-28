@@ -1,15 +1,19 @@
 package az.techvibeds.specialservice.services.impl;
 
-import az.techvibeds.specialservice.dtos.service.ServiceDescriptionDto;
-import az.techvibeds.specialservice.dtos.service.ServiceExecutionStatusDto;
+import az.techvibeds.specialservice.dtos.assignee.AssigneeGetDto;
+import az.techvibeds.specialservice.dtos.service.*;
+import az.techvibeds.specialservice.dtos.unit.UnitGetDto;
 import az.techvibeds.specialservice.enums.ServiceStatus;
+import az.techvibeds.specialservice.models.Assignee;
 import az.techvibeds.specialservice.models.Company;
 import az.techvibeds.specialservice.models.Service;
 import az.techvibeds.specialservice.repositories.ServiceRepository;
+import az.techvibeds.specialservice.services.AssigneeService;
+import az.techvibeds.specialservice.services.CompanyService;
 import az.techvibeds.specialservice.services.ServiceService;
+import az.techvibeds.specialservice.services.UnitService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-
 
 import java.util.HashMap;
 import java.util.List;
@@ -19,26 +23,33 @@ import java.util.stream.Collectors;
 @org.springframework.stereotype.Service
 @RequiredArgsConstructor
 public class ServiceServiceImpl implements ServiceService {
+
     private final ModelMapper modelMapper;
     private final ServiceRepository serviceRepository;
+    private final CompanyService companyService;
+    private final AssigneeService assigneeService;
+    private final UnitService unitService;
 
     @Override
-    public Map<String, Integer> getCountOfServicesByCompany(Company byUserEmail) {
-        List<Service> serviceList = serviceRepository.findAllByCompany(byUserEmail);
-        Integer allCount = serviceList.size();
-        Integer inProgressCount = 0;
-        Integer completedCount = 0;
-        Integer pendingCount = 0;
+    public Map<String, Integer> getCountOfServicesByCompany(Company company) {
+        List<Service> serviceList = serviceRepository.findAllByCompany(company);
+
+        int inProgressCount = 0;
+        int completedCount = 0;
+        int pendingCount = 0;
+
         for (Service service : serviceList) {
-            if (service.getStatus() == ServiceStatus.IN_PROGRESS) {
+            ServiceStatus status = service.getStatus();
+            if (status == ServiceStatus.IN_PROGRESS) {
                 inProgressCount++;
-            }else if (service.getStatus() == ServiceStatus.COMPLETED) {
+            } else if (status == ServiceStatus.COMPLETED) {
                 completedCount++;
-            }else if (service.getStatus() == ServiceStatus.PENDING) {
+            } else if (status == ServiceStatus.PENDING) {
                 pendingCount++;
             }
         }
-        Map<String,Integer> countOfServices = new HashMap<>();
+
+        Map<String, Integer> countOfServices = new HashMap<>();
         countOfServices.put("inProgressCount", inProgressCount);
         countOfServices.put("completedCount", completedCount);
         countOfServices.put("pendingCount", pendingCount);
@@ -68,6 +79,58 @@ public class ServiceServiceImpl implements ServiceService {
                     return dto;
                 })
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public ServiceReadDto createService(String email, ServiceCreateDto serviceCreateDto) {
+        Service service = modelMapper.map(serviceCreateDto, Service.class);
+        service.setCompany(companyService.findByUserEmail(email));
+
+        Assignee assignee = assigneeService.findAssigneeById(serviceCreateDto.getAssigneeId());
+        if (assignee.getActiveServiceCount() < assignee.getTotalCapacity()) {
+            service.setAssignee(assignee);
+        } else {
+            throw new RuntimeException("Assignee capacity exceeded");
+        }
+
+        service.setUnit(unitService.findUnitById(serviceCreateDto.getUnitId()));
+        serviceRepository.save(service);
+        return mapToReadDto(service);
+    }
+
+    private ServiceReadDto mapToReadDto(Service service) {
+        ServiceReadDto dto = modelMapper.map(service, ServiceReadDto.class);
+        dto.setAssignee(service.getAssignee() != null ? service.getAssignee().getName() : null);
+        dto.setUnit(service.getUnit() != null ? service.getUnit().getName() : null);
+        dto.setCompanyName(service.getCompany() != null ? service.getCompany().getName() : null);
+        return dto;
+    }
+
+    @Override
+    public ServiceGetDataDto getCompanyServicesData(String email) {
+        Company company = companyService.findByUserEmail(email);
+
+        ServiceGetDataDto dto = new ServiceGetDataDto();
+        dto.setServiceCounts(getCountOfServicesByCompany(company));
+        dto.setServiceDescriptionDtoList(getServiceDescriptions(company));
+        dto.setServiceExecutionStatusDtoList(getServiceExecutionStatus(company));
+        dto.setAssigneeServiceDtoList(assigneeService.getAssigneeByCompany(company));
+
+        return dto;
+    }
+
+    @Override
+    public ServiceCreateGetDataDto getCreateServiceData(String email) {
+        Company company = companyService.findByUserEmail(email);
+
+        List<UnitGetDto> unitGetDtoList = unitService.getAllUnits();
+        List<AssigneeGetDto> assigneeGetDtoList = assigneeService.getAllAssigneeByCompany(email);
+
+        ServiceCreateGetDataDto dto = new ServiceCreateGetDataDto();
+        dto.setUnits(unitGetDtoList);
+        dto.setAssignees(assigneeGetDtoList);
+
+        return dto;
     }
 
 }

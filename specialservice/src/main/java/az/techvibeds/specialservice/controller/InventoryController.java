@@ -59,13 +59,13 @@ public class InventoryController {
     }
 
     //Anbara qeydiyyat
-    @PostMapping("inventory-record")
+    @PostMapping("/record")
     public ResponseEntity<ProductCreateDto> inventoryRecord(@RequestBody ProductCreateDto productCreateDto, Principal principal) throws Exception {
         ProductCreateDto created = productService.createProductAndInventoryRecord(productCreateDto,companyService.findByUserEmail(principal.getName()));
         return ResponseEntity.ok(created);
     }
     //Anbardan cixis
-    @PostMapping("/inventory-remove")
+    @PostMapping("/remove")
     public ResponseEntity<String> removeFromWarehouse(@RequestParam String productCode, @RequestParam String warehouseName, @RequestParam Integer quantity, Principal principal) throws Exception {
         try {
             warehouseProductService.removeFromWarehouse(productCode, warehouseName, quantity,companyService.findByUserEmail(principal.getName()));
@@ -76,7 +76,7 @@ public class InventoryController {
     }
 
     //transfer
-    @PostMapping("/warehouse/transfer")
+    @PostMapping("/warehouse-transfer")
     public ResponseEntity<String> transferProduct(@RequestParam String productCode, @RequestParam String fromWarehouse, @RequestParam String toWarehouse, @RequestParam int quantity) {
         try {
             warehouseProductService.transferProductBetweenWarehouses(productCode, fromWarehouse, toWarehouse, quantity);

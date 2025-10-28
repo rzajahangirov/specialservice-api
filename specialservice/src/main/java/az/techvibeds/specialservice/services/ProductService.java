@@ -22,5 +22,4 @@ public interface ProductService {
 
     void updateInventorProduct(ProductInventoryUpdateDto productInventoryUpdateDto) throws Exception;
 
-    void updateStockMinus(Integer quantity, Product product);
 }
