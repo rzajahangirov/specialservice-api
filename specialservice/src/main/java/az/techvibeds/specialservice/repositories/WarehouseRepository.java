@@ -13,4 +13,6 @@ public interface WarehouseRepository extends JpaRepository<Warehouse, Long> {
     List<WarehouseProduct> findByCompany_Id(Long companyId);
 
     Warehouse findByNameAndCompany(String name, Company company);
+
+    List<Warehouse> findAllByCompanyId(Long companyId);
 }
