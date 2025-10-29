@@ -12,10 +12,9 @@ import java.math.BigDecimal;
 public class ProductCreateDto {
     private String name;
     private String productCode;
-    private Long stock;
     private BigDecimal price;
-    private String category;
+    private Long categoryId;
     private String productStatus;
-    private String warehouseName;
+    private Long warehouseId;
     private Integer quantity;
 }

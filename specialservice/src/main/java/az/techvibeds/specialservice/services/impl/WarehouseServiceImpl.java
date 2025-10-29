@@ -3,7 +3,6 @@ package az.techvibeds.specialservice.services.impl;
 import az.techvibeds.specialservice.dtos.warehouse.WarehouseCreateDto;
 import az.techvibeds.specialservice.dtos.warehouse.WarehouseReadDto;
 import az.techvibeds.specialservice.dtos.warehouse.WarehouseUpdateDto;
-import az.techvibeds.specialservice.models.Company;
 import az.techvibeds.specialservice.models.Warehouse;
 import az.techvibeds.specialservice.models.WarehouseProduct;
 import az.techvibeds.specialservice.repositories.WarehouseRepository;
@@ -26,18 +25,13 @@ public class WarehouseServiceImpl implements WarehouseService {
 
 
     @Override
-    public Warehouse getWarehouseByName(String stringCellValue) {
-        return warehouseRepository.findByName(stringCellValue);
+    public Warehouse getWarehouseByName(String warehouseName) {
+        return warehouseRepository.findByName(warehouseName);
     }
 
     @Override
     public List<WarehouseProduct> findAllByCompany_Id(Long companyId) {
         return warehouseRepository.findByCompany_Id(companyId);
-    }
-
-    @Override
-    public Warehouse getWarehouseByNameAndCompanyId(String warehouseName, Company company) {
-        return warehouseRepository.findByNameAndCompany(warehouseName, company);
     }
 
     @Override
@@ -81,6 +75,11 @@ public class WarehouseServiceImpl implements WarehouseService {
                 .stream()
                 .map(this::mapToReadDto)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Warehouse getWarehouseById(Long warehouseId) {
+        return warehouseRepository.findById(warehouseId).orElseThrow();
     }
 
     private WarehouseReadDto mapToReadDto(Warehouse warehouse) {

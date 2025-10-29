@@ -1,14 +1,12 @@
 package az.techvibeds.specialservice.services.impl;
 
 import az.techvibeds.specialservice.enums.ProductStatus;
-import az.techvibeds.specialservice.models.Company;
 import az.techvibeds.specialservice.models.Product;
 import az.techvibeds.specialservice.models.Warehouse;
 import az.techvibeds.specialservice.models.WarehouseProduct;
 import az.techvibeds.specialservice.repositories.ProductRepository;
 import az.techvibeds.specialservice.repositories.WarehouseProductRepository;
 import az.techvibeds.specialservice.repositories.WarehouseRepository;
-import az.techvibeds.specialservice.services.ProductService;
 import az.techvibeds.specialservice.services.WarehouseProductService;
 import az.techvibeds.specialservice.services.WarehouseService;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +21,7 @@ public class WarehouseProductServiceImpl implements WarehouseProductService {
     private final WarehouseRepository warehouseRepository;
 
     @Override
-    public WarehouseProduct createWarehouseProduct(Product product, String warehouseName, double quantity) {
+    public WarehouseProduct createWarehouseProduct(Product product, Long warehouseId, double quantity) {
         WarehouseProduct warehouseProduct = new WarehouseProduct();
         warehouseProduct.setProduct(product);
         if (quantity > 0) {
@@ -31,20 +29,20 @@ public class WarehouseProductServiceImpl implements WarehouseProductService {
         }else{
             warehouseProduct.setQuantity(0);
         }
-        warehouseProduct.setWarehouse(warehouseService.getWarehouseByName(warehouseName));
+        warehouseProduct.setWarehouse(warehouseService.getWarehouseById(warehouseId));
         warehouseProductRepository.save(warehouseProduct);
         return warehouseProduct;
     }
 
     @Override
-    public void removeFromWarehouse(String productCode, String warehouseName, Integer quantity, Company company) throws Exception {
+    public void removeFromWarehouse(String productCode, Long warehouseId, Integer quantity) throws Exception {
 
         Product product = productRepository.findByProductCode(productCode);
         if (product == null) {
             throw new Exception("Product not found with code: " + productCode);
         }
 
-        Warehouse warehouse = warehouseService.getWarehouseByNameAndCompanyId(warehouseName,company);
+        Warehouse warehouse = warehouseService.getWarehouseById(warehouseId);
         WarehouseProduct warehouseProduct = warehouseProductRepository.findByProductAndWarehouse(product, warehouse);
 
         if (warehouseProduct == null) {
@@ -70,7 +68,7 @@ public class WarehouseProductServiceImpl implements WarehouseProductService {
     }
 
     @Override
-    public void transferProductBetweenWarehouses(String productCode, String fromWarehouseName, String toWarehouseName, int quantity) throws Exception {
+    public void transferProductBetweenWarehouses(String productCode, Long fromWarehouseId, Long toWarehouseId, int quantity) throws Exception {
 
         Product product = productRepository.findByProductCode(productCode);
         if (product == null) {
@@ -78,10 +76,10 @@ public class WarehouseProductServiceImpl implements WarehouseProductService {
         }
 
 
-        Warehouse fromWarehouse = warehouseService.getWarehouseByName(fromWarehouseName);
+        Warehouse fromWarehouse = warehouseService.getWarehouseById(fromWarehouseId);
         WarehouseProduct fromWarehouseProduct = warehouseProductRepository.findByProductAndWarehouse(product, fromWarehouse);
         if (fromWarehouseProduct == null) {
-            throw new Exception("Product not found in source warehouse: " + fromWarehouseName);
+            throw new Exception("Product not found in source warehouse: " + fromWarehouseId);
         }
 
 
@@ -90,7 +88,7 @@ public class WarehouseProductServiceImpl implements WarehouseProductService {
         }
 
 
-        Warehouse toWarehouse = warehouseService.getWarehouseByName(toWarehouseName);
+        Warehouse toWarehouse = warehouseService.getWarehouseById(toWarehouseId);
         WarehouseProduct toWarehouseProduct = warehouseProductRepository.findByProductAndWarehouse(product, toWarehouse);
 
 
@@ -111,11 +109,11 @@ public class WarehouseProductServiceImpl implements WarehouseProductService {
     }
 
     @Override
-    public Integer updateInventarWarehouseProduct(WarehouseProduct warehouseProduct, String warehouse, Integer stock) {
+    public Integer updateInventoryWarehouseProduct(WarehouseProduct warehouseProduct, Long warehouseId, Integer stock) {
         WarehouseProduct warehouseProduct1 = warehouseProduct;
         Integer nowQuantity = warehouseProduct.getQuantity();
         warehouseProduct1.setQuantity(stock);
-        warehouseProduct1.setWarehouse(warehouseRepository.findByName(warehouse));
+        warehouseProduct1.setWarehouse(warehouseRepository.findById(warehouseId).orElseThrow());
         warehouseProductRepository.save(warehouseProduct1);
         return nowQuantity;
     }
@@ -132,6 +130,20 @@ public class WarehouseProductServiceImpl implements WarehouseProductService {
         product.setStock(product.getStock() - warehouseProduct.getQuantity());
         productRepository.save(product);
         warehouseProductRepository.deleteById(id);
+    }
+
+    @Override
+    public WarehouseProduct createWarehouseProductFromExcel(Product product, String warehouseName, double quantity) {
+        WarehouseProduct warehouseProduct = new WarehouseProduct();
+        warehouseProduct.setProduct(product);
+        if (quantity > 0) {
+            warehouseProduct.setQuantity((int) quantity);
+        }else{
+            warehouseProduct.setQuantity(0);
+        }
+        warehouseProduct.setWarehouse(warehouseService.getWarehouseByName(warehouseName));
+        warehouseProductRepository.save(warehouseProduct);
+        return warehouseProduct;
     }
 
 }

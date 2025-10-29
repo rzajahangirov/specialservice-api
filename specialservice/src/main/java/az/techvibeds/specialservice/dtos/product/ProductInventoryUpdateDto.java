@@ -18,7 +18,7 @@ public class ProductInventoryUpdateDto {
     private String name;
     private Integer stock;
     private BigDecimal price;
-    private String warehouse;
-    private String category;
+    private Long warehouseId;
+    private Long categoryId;
     private String productStatus;
 }

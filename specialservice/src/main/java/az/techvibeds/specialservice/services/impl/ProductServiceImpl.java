@@ -106,14 +106,14 @@ public class ProductServiceImpl implements ProductService {
                 }
                 productRepository.save(product);
 
-                WarehouseProduct warehouseProduct = warehouseProductService.createWarehouseProduct(product, row.getCell(5).getStringCellValue(), row.getCell(6).getNumericCellValue());
+                WarehouseProduct warehouseProduct = warehouseProductService.createWarehouseProductFromExcel(product, row.getCell(5).getStringCellValue(), row.getCell(6).getNumericCellValue());
                 List<WarehouseProduct> warehouseProductList = new ArrayList<>();
                 warehouseProductList.add(warehouseProduct);
                 product.setWarehouseProducts(warehouseProductList);
                 productRepository.save(product);
             }else{
                 Product product = productRepository.findByProductCode(row.getCell(1).getStringCellValue());
-                WarehouseProduct warehouseProduct = warehouseProductService.createWarehouseProduct(product, row.getCell(5).getStringCellValue(), row.getCell(6).getNumericCellValue());
+                WarehouseProduct warehouseProduct = warehouseProductService.createWarehouseProductFromExcel(product, row.getCell(5).getStringCellValue(), row.getCell(6).getNumericCellValue());
                 List<WarehouseProduct> warehouseProductList = product.getWarehouseProducts();
                 warehouseProductList.add(warehouseProduct);
                 product.setWarehouseProducts(warehouseProductList);
@@ -144,7 +144,7 @@ public class ProductServiceImpl implements ProductService {
             product.setName(productCreateDto.getName());
             product.setProductCode(productCreateDto.getProductCode());
             product.setPrice(productCreateDto.getPrice());
-            product.setCategory(categoryService.findByName(productCreateDto.getCategory()));
+            product.setCategory(categoryService.findById(productCreateDto.getCategoryId()));
 
             if (productCreateDto.getProductStatus().toUpperCase().equals("IN STOCK") || productCreateDto.getProductStatus().toUpperCase().equals("IN_STOCK")) {
                 product.setProductStatus(ProductStatus.IN_STOCK);
@@ -155,19 +155,21 @@ public class ProductServiceImpl implements ProductService {
             } else {
                 throw new Exception("product status not recognized");
             }
+            product.setStock(productCreateDto.getQuantity().longValue());
             productRepository.save(product);
 
-            WarehouseProduct warehouseProduct = warehouseProductService.createWarehouseProduct(product, productCreateDto.getWarehouseName(), productCreateDto.getQuantity());
+            WarehouseProduct warehouseProduct = warehouseProductService.createWarehouseProduct(product, productCreateDto.getWarehouseId(), productCreateDto.getQuantity());
             List<WarehouseProduct> warehouseProductList = new ArrayList<>();
             warehouseProductList.add(warehouseProduct);
             product.setWarehouseProducts(warehouseProductList);
             productRepository.save(product);
         }else{
             Product product = productRepository.findByProductCode(productCreateDto.getProductCode());
-            WarehouseProduct warehouseProduct = warehouseProductService.createWarehouseProduct(product, productCreateDto.getWarehouseName(), productCreateDto.getQuantity());
+            WarehouseProduct warehouseProduct = warehouseProductService.createWarehouseProduct(product, productCreateDto.getWarehouseId(), productCreateDto.getQuantity());
             List<WarehouseProduct> warehouseProductList = new ArrayList<>();
             warehouseProductList.add(warehouseProduct);
             product.setWarehouseProducts(warehouseProductList);
+            product.setStock(product.getStock()+productCreateDto.getQuantity().longValue());
             productRepository.save(product);
         }
         return productCreateDto;
@@ -180,7 +182,7 @@ public class ProductServiceImpl implements ProductService {
         product.setName(productInventoryUpdateDto.getName());
         product.setProductCode(productInventoryUpdateDto.getProductCode());
         product.setPrice(productInventoryUpdateDto.getPrice());
-        product.setCategory(categoryService.findByName(productInventoryUpdateDto.getCategory()));
+        product.setCategory(categoryService.findById(productInventoryUpdateDto.getCategoryId()));
 
         if (productInventoryUpdateDto.getProductStatus().toUpperCase().equals("IN STOCK") || productInventoryUpdateDto.getProductStatus().toUpperCase().equals("IN_STOCK")) {
             product.setProductStatus(ProductStatus.IN_STOCK);
@@ -192,7 +194,7 @@ public class ProductServiceImpl implements ProductService {
             throw new Exception(" product status not recognized");
         }
 
-        Integer stock = warehouseProductService.updateInventarWarehouseProduct(warehouseProduct,productInventoryUpdateDto.getWarehouse(),productInventoryUpdateDto.getStock());
+        Integer stock = warehouseProductService.updateInventoryWarehouseProduct(warehouseProduct,productInventoryUpdateDto.getWarehouseId(),productInventoryUpdateDto.getStock());
 
         product.setStock(product.getStock()-stock+productInventoryUpdateDto.getStock());
         productRepository.save(product);

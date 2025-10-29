@@ -66,9 +66,9 @@ public class InventoryController {
     }
     //Anbardan cixis
     @PostMapping("/remove")
-    public ResponseEntity<String> removeFromWarehouse(@RequestParam String productCode, @RequestParam String warehouseName, @RequestParam Integer quantity, Principal principal) throws Exception {
+    public ResponseEntity<String> removeFromWarehouse(@RequestParam String productCode, @RequestParam Long warehouseId, @RequestParam Integer quantity) {
         try {
-            warehouseProductService.removeFromWarehouse(productCode, warehouseName, quantity,companyService.findByUserEmail(principal.getName()));
+            warehouseProductService.removeFromWarehouse(productCode, warehouseId, quantity);
             return ResponseEntity.ok("Product removed from warehouse successfully.");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -77,10 +77,10 @@ public class InventoryController {
 
     //transfer
     @PostMapping("/warehouse-transfer")
-    public ResponseEntity<String> transferProduct(@RequestParam String productCode, @RequestParam String fromWarehouse, @RequestParam String toWarehouse, @RequestParam int quantity) {
+    public ResponseEntity<String> transferProduct(@RequestParam String productCode, @RequestParam Long fromWarehouseId, @RequestParam Long toWarehouseId, @RequestParam int quantity) {
         try {
-            warehouseProductService.transferProductBetweenWarehouses(productCode, fromWarehouse, toWarehouse, quantity);
-            return ResponseEntity.ok("Product successfully transferred from " + fromWarehouse + " to " + toWarehouse);
+            warehouseProductService.transferProductBetweenWarehouses(productCode, fromWarehouseId, toWarehouseId, quantity);
+            return ResponseEntity.ok("Product successfully transferred from " + fromWarehouseId + " to " + toWarehouseId);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -96,7 +96,7 @@ public class InventoryController {
 
     //delete inventar
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteInventory(@PathVariable Long id) throws Exception {
+    public ResponseEntity<String> deleteInventory(@PathVariable Long id) {
         warehouseProductService.deleteWarehouseProduct(id);
         return ResponseEntity.ok("Product deleted successfully.");
     }
