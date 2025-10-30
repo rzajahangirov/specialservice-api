@@ -26,15 +26,15 @@ public class TransactionController {
 
     // Musteri yaratmaq
     @PostMapping("/create-customer")
-    public ResponseEntity<PartnerCreateDto> createCustomer(@RequestBody PartnerCreateDto partnerCreateDto, Principal principal) {
-        PartnerCreateDto created = partnerService.createCustomer(partnerCreateDto, principal.getName());
+    public ResponseEntity<PartnerReadDto> createCustomer(@RequestBody PartnerCreateDto partnerCreateDto, Principal principal) {
+        PartnerReadDto created = partnerService.createCustomer(partnerCreateDto, principal.getName());
         return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
 
     // Techizatci yaratmaq
     @PostMapping("/create-supplier")
-    public ResponseEntity<PartnerCreateDto> createSupplier(@RequestBody PartnerCreateDto partnerCreateDto, Principal principal) {
-        PartnerCreateDto created = partnerService.createSupplier(partnerCreateDto, principal.getName());
+    public ResponseEntity<PartnerReadDto> createSupplier(@RequestBody PartnerCreateDto partnerCreateDto, Principal principal) {
+        PartnerReadDto created = partnerService.createSupplier(partnerCreateDto, principal.getName());
         return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
 
@@ -65,7 +65,7 @@ public class TransactionController {
 
 
     // Update partner elements
-    @PutMapping("update-partner")
+    @PutMapping("/update-partner")
     public ResponseEntity<PartnerReadDto> updatePartner(@RequestBody PartnerUpdateDto partnerUpdateDto) throws Exception {
         PartnerReadDto partnerReadDto = partnerService.updatePartner(partnerUpdateDto);
         return new ResponseEntity<>(partnerReadDto, HttpStatus.OK);

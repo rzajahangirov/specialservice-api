@@ -10,9 +10,9 @@ import java.io.ByteArrayInputStream;
 import java.util.List;
 
 public interface PartnerService {
-    PartnerCreateDto createCustomer(PartnerCreateDto partnerCreateDto, String name);
+    PartnerReadDto createCustomer(PartnerCreateDto partnerCreateDto, String name);
 
-    PartnerCreateDto createSupplier(PartnerCreateDto partnerCreateDto, String name);
+    PartnerReadDto createSupplier(PartnerCreateDto partnerCreateDto, String name);
 
     List<PartnerDto> getPartners(String name);
 

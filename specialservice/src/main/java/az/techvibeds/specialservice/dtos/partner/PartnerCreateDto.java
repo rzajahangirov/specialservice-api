@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 public class PartnerCreateDto {
     private String name;
-    private String ContactPerson;
+    private String contactPerson;
     private String email;
     private String phone;
     private BigDecimal balance;

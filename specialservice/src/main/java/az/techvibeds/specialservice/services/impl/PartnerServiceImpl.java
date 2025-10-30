@@ -38,26 +38,32 @@ public class PartnerServiceImpl implements PartnerService {
 
 
     @Override
-    public PartnerCreateDto createCustomer(PartnerCreateDto dto, String userEmail) {
+    public PartnerReadDto createCustomer(PartnerCreateDto dto, String userEmail) {
         return createPartner(dto, PartnerType.CUSTOMER, userEmail);
     }
 
     @Override
-    public PartnerCreateDto createSupplier(PartnerCreateDto dto, String userEmail) {
+    public PartnerReadDto createSupplier(PartnerCreateDto dto, String userEmail) {
         return createPartner(dto, PartnerType.SUPPLIER, userEmail);
     }
 
-    private PartnerCreateDto createPartner(PartnerCreateDto dto, PartnerType type, String userEmail) {
+    private PartnerReadDto createPartner(PartnerCreateDto dto, PartnerType type, String userEmail) {
         Partner partner = mapCreateDtoToPartner(dto);
         partner.setPartnerType(type);
         partner.setCompany(companyService.findByUserEmail(userEmail));
 
+         partnerRepository.save(partner);
+
+
         Balance balance = createBalanceForPartner(dto, partner);
         partner.setBalance(balance);
 
+
         partnerRepository.save(partner);
-        return dto;
+
+        return mapToReadDto(partner);
     }
+
 
     private Partner mapCreateDtoToPartner(PartnerCreateDto dto) {
         Partner partner = new Partner();
@@ -125,7 +131,7 @@ public class PartnerServiceImpl implements PartnerService {
             partner.setContactPerson(row.getCell(1).getStringCellValue());
             partner.setEmail(row.getCell(2).getStringCellValue());
             partner.setPhone(row.getCell(3).getStringCellValue());
-            partner.setPartnerType(parsePartnerTypeFromRow(row.getCell(5).getStringCellValue()));
+            partner.setPartnerType(parsePartnerTypeFromRow(row.getCell(6).getStringCellValue()));
             partner.setCompany(company);
 
 
@@ -141,18 +147,23 @@ public class PartnerServiceImpl implements PartnerService {
     }
 
     private Balance parseBalanceFromRow(Row row, Partner partner, Map<String, String> currencyMap) throws Exception {
-        Cell cell = row.getCell(4);
-        if (cell.getCellType() != CellType.NUMERIC) {
-            throw new Exception("The Excel columns are not correct.");
-        }
 
-        CellStyle style = cell.getCellStyle();
-        String formatString = style.getDataFormatString();
-        String currencyType = formatString.replaceAll("[#,0.]+", "").trim();
-        currencyType = currencyMap.getOrDefault(currencyType, "UNKNOWN");
+        Cell balanceCell = row.getCell(4);
+        if (balanceCell.getCellType() != CellType.NUMERIC) {
+            throw new Exception("The Excel columns are not correct. Balance must be numeric.");
+        }
+        double amount = balanceCell.getNumericCellValue();
+
+
+        Cell currencyCell = row.getCell(5);
+        if (currencyCell.getCellType() != CellType.STRING) {
+            throw new Exception("The Excel columns are not correct. Currency must be text.");
+        }
+        String currencySymbol = currencyCell.getStringCellValue().trim();
+        String currencyType = currencyMap.getOrDefault(currencySymbol, "UNKNOWN");
 
         Balance balance = new Balance();
-        balance.setAmount(BigDecimal.valueOf(cell.getNumericCellValue()));
+        balance.setAmount(BigDecimal.valueOf(amount));
         balance.setCurrencyType(currencyType);
         balance.setPartner(partner);
 
@@ -194,7 +205,7 @@ public class PartnerServiceImpl implements PartnerService {
 
         partnerRepository.save(partner);
 
-        return mapToReadDto(dto);
+        return mapToReadDto(partner);
     }
 
 
@@ -255,16 +266,16 @@ public class PartnerServiceImpl implements PartnerService {
     }
 
 
-    private PartnerReadDto mapToReadDto(PartnerUpdateDto dto) {
+    private PartnerReadDto mapToReadDto(Partner partner) {
         PartnerReadDto readDto = new PartnerReadDto();
-        readDto.setId(dto.getId());
-        readDto.setName(dto.getName());
-        readDto.setContactPerson(dto.getContactPerson());
-        readDto.setEmail(dto.getEmail());
-        readDto.setPhone(dto.getPhone());
-        readDto.setBalance(dto.getBalance());
-        readDto.setCurrency(dto.getCurrency());
-        readDto.setCustomerType(dto.getCustomerType());
+        readDto.setId(partner.getId());
+        readDto.setName(partner.getName());
+        readDto.setContactPerson(partner.getContactPerson());
+        readDto.setEmail(partner.getEmail());
+        readDto.setPhone(partner.getPhone());
+        readDto.setBalance(partner.getBalance().getAmount());
+        readDto.setCurrency(partner.getBalance().getCurrencyType());
+        readDto.setPartnerType(partner.getPartnerType().name());
         return readDto;
     }
 }

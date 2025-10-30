@@ -17,7 +17,7 @@ public class Partner {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
-    private String ContactPerson;
+    private String contactPerson;
     private String email;
     private String phone;
 

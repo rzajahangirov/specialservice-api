@@ -17,5 +17,5 @@ public class PartnerReadDto {
     private String phone;
     private BigDecimal balance;
     private String currency;
-    private String customerType;
+    private String partnerType;
 }
