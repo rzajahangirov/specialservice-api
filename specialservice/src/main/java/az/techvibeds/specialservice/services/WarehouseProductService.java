@@ -10,7 +10,7 @@ public interface WarehouseProductService {
 
     void transferProductBetweenWarehouses(String productCode, Long fromWarehouseId, Long toWarehouseId, int quantity) throws Exception;
 
-    Integer updateInventoryWarehouseProduct(WarehouseProduct warehouseProduct, Long warehouseId, Integer stock);
+    Integer updateInventoryWarehouseProduct(WarehouseProduct warehouseProduct, Long warehouseId, Integer quantity);
 
     WarehouseProduct findWarehouseProductById(Long id);
 

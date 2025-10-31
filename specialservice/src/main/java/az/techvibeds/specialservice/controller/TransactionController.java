@@ -47,9 +47,9 @@ public class TransactionController {
 
     // Excel ile idxal
     @PostMapping("/upload-partners")
-    public ResponseEntity<String> uploadExcel(@RequestParam("file") MultipartFile file, Principal principal) throws Exception {
+    public ResponseEntity<ApiResponse> uploadExcel(@RequestParam("file") MultipartFile file, Principal principal) throws Exception {
         partnerService.importFromExcel(file, principal.getName());
-        return ResponseEntity.ok("Excel successfully uploaded and saved to DB!");
+        return ResponseEntity.ok(new ApiResponse("Excel successfully uploaded and saved to DB!", true));
     }
 
     //export

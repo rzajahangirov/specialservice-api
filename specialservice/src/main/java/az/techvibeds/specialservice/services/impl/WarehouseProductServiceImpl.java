@@ -55,7 +55,8 @@ public class WarehouseProductServiceImpl implements WarehouseProductService {
         }
 
 
-        warehouseProduct.setQuantity(warehouseProduct.getQuantity() - quantity);
+        if (quantity<0){warehouseProduct.setQuantity(warehouseProduct.getQuantity() - quantity);}
+        else {throw new Exception("Quantity mast be greater than zero");}
         product.setStock(product.getStock() - quantity);
         productRepository.save(product);
         warehouseProductRepository.save(warehouseProduct);
@@ -99,20 +100,20 @@ public class WarehouseProductServiceImpl implements WarehouseProductService {
             toWarehouseProduct.setQuantity(0);
         }
 
-
-        fromWarehouseProduct.setQuantity(fromWarehouseProduct.getQuantity() - quantity);
-        toWarehouseProduct.setQuantity(toWarehouseProduct.getQuantity() + quantity);
-
+        if (toWarehouseProduct.getQuantity() > 0) {
+            fromWarehouseProduct.setQuantity(fromWarehouseProduct.getQuantity() - quantity);
+            toWarehouseProduct.setQuantity(toWarehouseProduct.getQuantity() + quantity);
+        }else{throw new Exception("Quantity mast be greater than zero");}
 
         warehouseProductRepository.save(fromWarehouseProduct);
         warehouseProductRepository.save(toWarehouseProduct);
     }
 
     @Override
-    public Integer updateInventoryWarehouseProduct(WarehouseProduct warehouseProduct, Long warehouseId, Integer stock) {
+    public Integer updateInventoryWarehouseProduct(WarehouseProduct warehouseProduct, Long warehouseId, Integer quantity) {
         WarehouseProduct warehouseProduct1 = warehouseProduct;
         Integer nowQuantity = warehouseProduct.getQuantity();
-        warehouseProduct1.setQuantity(stock);
+        if (quantity>0) warehouseProduct1.setQuantity(quantity);
         warehouseProduct1.setWarehouse(warehouseRepository.findById(warehouseId).orElseThrow());
         warehouseProductRepository.save(warehouseProduct1);
         return nowQuantity;

@@ -3,6 +3,7 @@ package az.techvibeds.specialservice.services.impl;
 import az.techvibeds.specialservice.dtos.product.ProductCreateDto;
 import az.techvibeds.specialservice.dtos.product.ProductInventoryDto;
 import az.techvibeds.specialservice.dtos.product.ProductInventoryUpdateDto;
+import az.techvibeds.specialservice.dtos.product.ProductReadDto;
 import az.techvibeds.specialservice.enums.ProductStatus;
 import az.techvibeds.specialservice.models.Company;
 import az.techvibeds.specialservice.models.Product;
@@ -137,7 +138,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductCreateDto createProductAndInventoryRecord(ProductCreateDto productCreateDto, Company byUserEmail) throws Exception {
+    public ProductReadDto createProductAndInventoryRecord(ProductCreateDto productCreateDto, Company byUserEmail) throws Exception {
         if(!productRepository.existsByProductCode(productCreateDto.getProductCode())){
             Product product = new Product();
             product.setCompany(byUserEmail);
@@ -155,7 +156,8 @@ public class ProductServiceImpl implements ProductService {
             } else {
                 throw new Exception("product status not recognized");
             }
-            product.setStock(productCreateDto.getQuantity().longValue());
+            if (productCreateDto.getQuantity()>0){product.setStock(productCreateDto.getQuantity().longValue());}
+            else{product.setStock(0L);}
             productRepository.save(product);
 
             WarehouseProduct warehouseProduct = warehouseProductService.createWarehouseProduct(product, productCreateDto.getWarehouseId(), productCreateDto.getQuantity());
@@ -163,21 +165,23 @@ public class ProductServiceImpl implements ProductService {
             warehouseProductList.add(warehouseProduct);
             product.setWarehouseProducts(warehouseProductList);
             productRepository.save(product);
+            return mapToProductReadDto(product,warehouseProduct);
         }else{
             Product product = productRepository.findByProductCode(productCreateDto.getProductCode());
             WarehouseProduct warehouseProduct = warehouseProductService.createWarehouseProduct(product, productCreateDto.getWarehouseId(), productCreateDto.getQuantity());
             List<WarehouseProduct> warehouseProductList = new ArrayList<>();
             warehouseProductList.add(warehouseProduct);
             product.setWarehouseProducts(warehouseProductList);
-            product.setStock(product.getStock()+productCreateDto.getQuantity().longValue());
+            if (productCreateDto.getQuantity()>0){product.setStock(product.getStock()+productCreateDto.getQuantity().longValue());}
             productRepository.save(product);
+            return mapToProductReadDto(product,warehouseProduct);
         }
-        return productCreateDto;
+
     }
 
     @Override
-    public void updateInventorProduct(ProductInventoryUpdateDto productInventoryUpdateDto) throws Exception {
-        WarehouseProduct warehouseProduct = warehouseProductService.findWarehouseProductById(productInventoryUpdateDto.getId());
+    public ProductReadDto updateInventorProduct(ProductInventoryUpdateDto productInventoryUpdateDto) throws Exception {
+        WarehouseProduct warehouseProduct = warehouseProductService.findWarehouseProductById(productInventoryUpdateDto.getWarehouseProductId());
         Product product = warehouseProduct.getProduct();
         product.setName(productInventoryUpdateDto.getName());
         product.setProductCode(productInventoryUpdateDto.getProductCode());
@@ -194,11 +198,24 @@ public class ProductServiceImpl implements ProductService {
             throw new Exception(" product status not recognized");
         }
 
-        Integer stock = warehouseProductService.updateInventoryWarehouseProduct(warehouseProduct,productInventoryUpdateDto.getWarehouseId(),productInventoryUpdateDto.getStock());
+        Integer stock = warehouseProductService.updateInventoryWarehouseProduct(warehouseProduct,productInventoryUpdateDto.getWarehouseId(),productInventoryUpdateDto.getQuantity());
 
-        product.setStock(product.getStock()-stock+productInventoryUpdateDto.getStock());
+        if (productInventoryUpdateDto.getQuantity()>0){product.setStock(product.getStock()-stock+productInventoryUpdateDto.getQuantity().longValue());}
+        else{throw new Exception("Quantity must be greater than zero");}
+
         productRepository.save(product);
+        return mapToProductReadDto(product,warehouseProduct);
+    }
 
+    private ProductReadDto mapToProductReadDto(Product product, WarehouseProduct warehouseProduct) {
+        ProductReadDto productReadDto = modelMapper.map(product, ProductReadDto.class);
+        productReadDto.setWarehouseProductId(warehouseProduct.getId());
+        productReadDto.setTotalStock(product.getStock());
+        productReadDto.setCategoryName(product.getCategory().getName());
+        productReadDto.setProductStatus(product.getProductStatus().name());
+        productReadDto.setWarehouseName(warehouseProduct.getWarehouse().getName());
+        productReadDto.setQuantity(warehouseProduct.getQuantity());
+        return productReadDto;
     }
 
 

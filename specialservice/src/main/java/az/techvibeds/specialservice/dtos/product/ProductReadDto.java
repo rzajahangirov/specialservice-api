@@ -7,18 +7,19 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ProductInventoryUpdateDto {
+public class ProductReadDto {
+    private Long id;
     private Long warehouseProductId;
-    private String productCode;
     private String name;
-    private Integer quantity;
+    private String productCode;
+    private Long totalStock;
     private BigDecimal price;
-    private Long warehouseId;
-    private Long categoryId;
+    private String categoryName;
     private String productStatus;
+    private String warehouseName;
+    private Integer quantity;
 }

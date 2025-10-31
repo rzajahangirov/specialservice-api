@@ -5,6 +5,8 @@ import az.techvibeds.specialservice.dtos.inventory.InventoryDto;
 import az.techvibeds.specialservice.dtos.product.ProductCreateDto;
 import az.techvibeds.specialservice.dtos.product.ProductInventoryDto;
 import az.techvibeds.specialservice.dtos.product.ProductInventoryUpdateDto;
+import az.techvibeds.specialservice.dtos.product.ProductReadDto;
+import az.techvibeds.specialservice.payloads.ApiResponse;
 import az.techvibeds.specialservice.services.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -53,52 +55,56 @@ public class InventoryController {
 
     //Excelden import
     @PostMapping("/upload-products")
-    public ResponseEntity<String> uploadExcel(@RequestParam("file") MultipartFile file, Principal principal) throws Exception {
+    public ResponseEntity<ApiResponse> uploadExcel(@RequestParam("file") MultipartFile file, Principal principal) throws Exception {
         productService.uploadProductsFromExcel(file,companyService.findByUserEmail(principal.getName()));
-        return ResponseEntity.ok("Excel successfully uploaded and saved to DB!");
+        return ResponseEntity.ok(new ApiResponse("Excel successfully uploaded and saved to DB!" ,true));
     }
 
     //Anbara qeydiyyat
     @PostMapping("/record")
-    public ResponseEntity<ProductCreateDto> inventoryRecord(@RequestBody ProductCreateDto productCreateDto, Principal principal) throws Exception {
-        ProductCreateDto created = productService.createProductAndInventoryRecord(productCreateDto,companyService.findByUserEmail(principal.getName()));
+    public ResponseEntity<ProductReadDto> inventoryRecord(@RequestBody ProductCreateDto productCreateDto, Principal principal) throws Exception {
+        ProductReadDto created = productService.createProductAndInventoryRecord(productCreateDto,companyService.findByUserEmail(principal.getName()));
         return ResponseEntity.ok(created);
     }
     //Anbardan cixis
     @PostMapping("/remove")
-    public ResponseEntity<String> removeFromWarehouse(@RequestParam String productCode, @RequestParam Long warehouseId, @RequestParam Integer quantity) {
+    public ResponseEntity<ApiResponse> removeFromWarehouse(@RequestParam String productCode, @RequestParam Long warehouseId, @RequestParam Integer quantity) {
         try {
             warehouseProductService.removeFromWarehouse(productCode, warehouseId, quantity);
-            return ResponseEntity.ok("Product removed from warehouse successfully.");
+            return ResponseEntity.ok(new ApiResponse("Product removed from warehouse successfully.", true));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity
+                    .badRequest()
+                    .body(new ApiResponse("Error during removing: " + e.getMessage(), false));
         }
     }
 
     //transfer
     @PostMapping("/warehouse-transfer")
-    public ResponseEntity<String> transferProduct(@RequestParam String productCode, @RequestParam Long fromWarehouseId, @RequestParam Long toWarehouseId, @RequestParam int quantity) {
+    public ResponseEntity<ApiResponse> transferProduct(@RequestParam String productCode, @RequestParam Long fromWarehouseId, @RequestParam Long toWarehouseId, @RequestParam int quantity) {
         try {
             warehouseProductService.transferProductBetweenWarehouses(productCode, fromWarehouseId, toWarehouseId, quantity);
-            return ResponseEntity.ok("Product successfully transferred from " + fromWarehouseId + " to " + toWarehouseId);
+            return ResponseEntity.ok(new ApiResponse("Product successfully transferred from " + fromWarehouseId + " to " + toWarehouseId, true));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity
+                    .badRequest()
+                    .body(new ApiResponse("Error during transfer: " + e.getMessage(), false));
         }
     }
 
-    //update inventar
+    //update inventory(warehouseProduct vasiesi ile hem product hemde warehouseProductUpdate olunur)
     @PutMapping
-    public ResponseEntity<String> updateInventory(@RequestBody ProductInventoryUpdateDto productInventoryUpdateDto) throws Exception {
-        productService.updateInventorProduct(productInventoryUpdateDto);
-        return ResponseEntity.ok("Product updated successfully.");
+    public ResponseEntity<ProductReadDto> updateInventory(@RequestBody ProductInventoryUpdateDto productInventoryUpdateDto) throws Exception {
+        ProductReadDto dto = productService.updateInventorProduct(productInventoryUpdateDto);
+        return ResponseEntity.ok(dto);
     }
 
 
-    //delete inventar
+    //delete inventory
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteInventory(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse> deleteInventory(@PathVariable Long id) {
         warehouseProductService.deleteWarehouseProduct(id);
-        return ResponseEntity.ok("Product deleted successfully.");
+        return ResponseEntity.ok(new ApiResponse("Product deleted successfully.", true));
     }
 
 }
