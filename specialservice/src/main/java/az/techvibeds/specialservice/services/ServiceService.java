@@ -16,6 +16,4 @@ public interface ServiceService {
     ServiceReadDto createService(String email, ServiceCreateDto serviceCreateDto);
 
     ServiceGetDataDto getCompanyServicesData(String email);
-
-    ServiceCreateGetDataDto getCreateServiceData(String email);
 }

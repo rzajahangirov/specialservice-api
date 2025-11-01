@@ -29,10 +29,4 @@ public class ServiceController {
                                                         @RequestBody ServiceCreateDto dto) {
         return ResponseEntity.ok(serviceService.createService(principal.getName(), dto));
     }
-
-
-    @GetMapping("/create-data")
-    public ResponseEntity<ServiceCreateGetDataDto> getCreateData(Principal principal) {
-        return ResponseEntity.ok(serviceService.getCreateServiceData(principal.getName()));
-    }
 }

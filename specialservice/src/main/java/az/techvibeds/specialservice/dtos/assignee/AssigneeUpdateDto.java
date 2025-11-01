@@ -1,4 +1,4 @@
-package az.techvibeds.specialservice.dtos.category;
+package az.techvibeds.specialservice.dtos.assignee;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,7 +9,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class CategoryUpdateDto {
+public class AssigneeUpdateDto {
     private Long id;
     private String name;
+    private Integer totalCapacity;
+    private Integer activeServiceCount;
 }

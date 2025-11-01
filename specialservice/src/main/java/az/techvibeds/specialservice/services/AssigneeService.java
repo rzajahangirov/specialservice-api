@@ -1,11 +1,10 @@
 package az.techvibeds.specialservice.services;
 
-import az.techvibeds.specialservice.dtos.assignee.AssigneeDetailDto;
-import az.techvibeds.specialservice.dtos.assignee.AssigneeGetDto;
-import az.techvibeds.specialservice.dtos.assignee.AssigneeServiceDto;
+import az.techvibeds.specialservice.dtos.assignee.*;
 import az.techvibeds.specialservice.models.Assignee;
 import az.techvibeds.specialservice.models.Company;
 
+import java.security.Principal;
 import java.util.List;
 
 public interface AssigneeService {
@@ -16,4 +15,12 @@ public interface AssigneeService {
     List<AssigneeGetDto> getAllAssigneeByCompany(String name);
 
     AssigneeDetailDto findAssigneeByIdDetailDto(Long id);
+
+    AssigneeReadDto create(AssigneeCreateDto dto, Principal principal);
+
+    AssigneeReadDto update(AssigneeUpdateDto dto);
+
+    void delete(Long id);
+
+    List<AssigneeReadDto> getAll();
 }

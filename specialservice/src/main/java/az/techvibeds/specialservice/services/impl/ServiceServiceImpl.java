@@ -82,21 +82,28 @@ public class ServiceServiceImpl implements ServiceService {
     }
 
     @Override
-    public ServiceReadDto createService(String email, ServiceCreateDto serviceCreateDto) {
-        Service service = modelMapper.map(serviceCreateDto, Service.class);
+    public ServiceReadDto createService(String email, ServiceCreateDto dto) {
+        Service service = new Service();
+        service.setName(dto.getName());
+        service.setDescription(dto.getDescription());
+        service.setAmount(dto.getAmount());
+        service.setDeadline(dto.getDeadline());
+        service.setStatus(ServiceStatus.valueOf(dto.getStatusDto()));
         service.setCompany(companyService.findByUserEmail(email));
 
-        Assignee assignee = assigneeService.findAssigneeById(serviceCreateDto.getAssigneeId());
+        Assignee assignee = assigneeService.findAssigneeById(dto.getAssigneeId());
         if (assignee.getActiveServiceCount() < assignee.getTotalCapacity()) {
             service.setAssignee(assignee);
         } else {
             throw new RuntimeException("Assignee capacity exceeded");
         }
 
-        service.setUnit(unitService.findUnitById(serviceCreateDto.getUnitId()));
+        service.setUnit(unitService.findUnitById(dto.getUnitId()));
         serviceRepository.save(service);
+
         return mapToReadDto(service);
     }
+
 
     private ServiceReadDto mapToReadDto(Service service) {
         ServiceReadDto dto = modelMapper.map(service, ServiceReadDto.class);
@@ -115,20 +122,6 @@ public class ServiceServiceImpl implements ServiceService {
         dto.setServiceDescriptionDtoList(getServiceDescriptions(company));
         dto.setServiceExecutionStatusDtoList(getServiceExecutionStatus(company));
         dto.setAssigneeServiceDtoList(assigneeService.getAssigneeByCompany(company));
-
-        return dto;
-    }
-
-    @Override
-    public ServiceCreateGetDataDto getCreateServiceData(String email) {
-        Company company = companyService.findByUserEmail(email);
-
-        List<UnitGetDto> unitGetDtoList = unitService.getAllUnits();
-        List<AssigneeGetDto> assigneeGetDtoList = assigneeService.getAllAssigneeByCompany(email);
-
-        ServiceCreateGetDataDto dto = new ServiceCreateGetDataDto();
-        dto.setUnits(unitGetDtoList);
-        dto.setAssignees(assigneeGetDtoList);
 
         return dto;
     }

@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ActivitiesGetDto {
+public class ActivitiesReadDto {
     private Long id;
     private String process;
     private LocalDateTime startTime;

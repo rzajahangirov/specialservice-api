@@ -1,6 +1,6 @@
 package az.techvibeds.specialservice.dtos.assignee;
 
-import az.techvibeds.specialservice.dtos.activities.ActivitiesGetDto;
+import az.techvibeds.specialservice.dtos.activities.ActivitiesReadDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,6 +16,5 @@ public class AssigneeDetailDto {
     private String name;
     private Integer activeServiceCount;
     private Integer totalCapacity;
-    private List<ActivitiesGetDto> activitiesDto;
-
+    private List<ActivitiesReadDto> activitiesDto;
 }

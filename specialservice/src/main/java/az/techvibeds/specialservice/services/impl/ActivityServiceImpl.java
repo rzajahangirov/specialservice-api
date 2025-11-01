@@ -1,6 +1,6 @@
 package az.techvibeds.specialservice.services.impl;
 
-import az.techvibeds.specialservice.dtos.activities.ActivitiesGetDto;
+import az.techvibeds.specialservice.dtos.activities.ActivitiesReadDto;
 import az.techvibeds.specialservice.models.Assignee;
 import az.techvibeds.specialservice.repositories.ActivityRepository;
 import az.techvibeds.specialservice.services.ActivityService;
@@ -19,11 +19,11 @@ public class ActivityServiceImpl implements ActivityService {
     private final ActivityRepository activityRepository;
 
     @Override
-    public List<ActivitiesGetDto> findAllByAssigneeId(Assignee assignee) {
+    public List<ActivitiesReadDto> findAllByAssigneeId(Assignee assignee) {
         return activityRepository.findAllByAssignee(assignee)
                 .stream()
                 .map(activity -> {
-                    ActivitiesGetDto activitiesGetDto = modelMapper.map(activity, ActivitiesGetDto.class);
+                    ActivitiesReadDto activitiesGetDto = modelMapper.map(activity, ActivitiesReadDto.class);
                     activitiesGetDto.setActivityStatusDto(activity.getActivityStatus().toString() != null ? activity.getActivityStatus().toString() : "");
                     return activitiesGetDto;
                 })
