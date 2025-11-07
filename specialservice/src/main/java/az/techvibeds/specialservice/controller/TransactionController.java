@@ -1,9 +1,6 @@
 package az.techvibeds.specialservice.controller;
 
-import az.techvibeds.specialservice.dtos.partner.PartnerCreateDto;
-import az.techvibeds.specialservice.dtos.partner.PartnerDto;
-import az.techvibeds.specialservice.dtos.partner.PartnerReadDto;
-import az.techvibeds.specialservice.dtos.partner.PartnerUpdateDto;
+import az.techvibeds.specialservice.dtos.partner.*;
 import az.techvibeds.specialservice.payloads.ApiResponse;
 import az.techvibeds.specialservice.services.PartnerService;
 import lombok.RequiredArgsConstructor;
@@ -41,9 +38,22 @@ public class TransactionController {
     // Musderiler ve Techizatcilar list
     @GetMapping
     public ResponseEntity<List<PartnerDto>> getPartners(Principal principal) {
-        List<PartnerDto> partnerDto = partnerService.getPartners(principal.getName());
+        List<PartnerDto> partnerDto = partnerService.getAllPartnersByCompany(principal.getName());
         return new ResponseEntity<>(partnerDto, HttpStatus.OK);
     }
+
+    @GetMapping("/partner-types")
+    public ResponseEntity<PartnerTypeDto> getPartnerTypes() {
+        PartnerTypeDto partnerTypeDtoList = partnerService.getPartnerTypes();
+        return ResponseEntity.ok(partnerTypeDtoList);
+    }
+    @GetMapping("/filter")
+    public ResponseEntity<List<PartnerDto>> filterPartners(@RequestParam("filter") String partnerType, Principal principal) throws Exception {
+        List<PartnerDto> partnerDtoList = partnerService.findByPartnerTypeAndCompany_Id(partnerType,principal.getName());
+        return new ResponseEntity<>(partnerDtoList, HttpStatus.OK);
+    }
+
+
 
     // Excel ile idxal
     @PostMapping("/upload-partners")

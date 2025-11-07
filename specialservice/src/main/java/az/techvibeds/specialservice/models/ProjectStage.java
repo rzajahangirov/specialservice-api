@@ -5,22 +5,16 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "assignees")
-public class Assignee {
+@Table(name = "projectStages")
+public class ProjectStage {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
-    private Integer activeServiceCount;
-    private Integer totalCapacity;
-
-    @ManyToOne
-    private Company company;
-
+    private Integer stageNumber;
+    private Double progressPercentage;
 }

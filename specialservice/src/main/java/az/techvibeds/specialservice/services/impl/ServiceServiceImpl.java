@@ -1,8 +1,7 @@
 package az.techvibeds.specialservice.services.impl;
 
-import az.techvibeds.specialservice.dtos.assignee.AssigneeGetDto;
+
 import az.techvibeds.specialservice.dtos.service.*;
-import az.techvibeds.specialservice.dtos.unit.UnitGetDto;
 import az.techvibeds.specialservice.enums.ServiceStatus;
 import az.techvibeds.specialservice.models.Assignee;
 import az.techvibeds.specialservice.models.Company;
@@ -88,7 +87,15 @@ public class ServiceServiceImpl implements ServiceService {
         service.setDescription(dto.getDescription());
         service.setAmount(dto.getAmount());
         service.setDeadline(dto.getDeadline());
-        service.setStatus(ServiceStatus.valueOf(dto.getStatusDto()));
+        if (dto.getStatusDto().toUpperCase().equals("IN_PROGRESS") || dto.getStatusDto().toUpperCase().equals("INPROGRESS")){
+            service.setStatus(ServiceStatus.IN_PROGRESS);
+        }else if(dto.getStatusDto().toUpperCase().equals("COMPLETED")){
+            service.setStatus(ServiceStatus.COMPLETED);
+        }else if(dto.getStatusDto().toUpperCase().equals("PENDING")){
+            service.setStatus(ServiceStatus.PENDING);
+        }else if(dto.getStatusDto().toUpperCase().equals("CANCELLED")){
+            service.setStatus(ServiceStatus.CANCELED);
+        }
         service.setCompany(companyService.findByUserEmail(email));
 
         Assignee assignee = assigneeService.findAssigneeById(dto.getAssigneeId());
@@ -124,6 +131,35 @@ public class ServiceServiceImpl implements ServiceService {
         dto.setAssigneeServiceDtoList(assigneeService.getAssigneeByCompany(company));
 
         return dto;
+    }
+
+    @Override
+    public ServiceReadDto updateService(ServiceUpdateDto dto) {
+        Service service = serviceRepository.findById(dto.getId()).orElseThrow(() -> new RuntimeException("Service not found"));
+        if (dto.getName() != null) service.setName(dto.getName());
+        if (dto.getDescription() != null) service.setDescription(dto.getDescription());
+        if (dto.getAmount() != null) service.setAmount(dto.getAmount());
+        if (dto.getDeadline() != null) service.setDeadline(dto.getDeadline());
+        if (dto.getStatusDto().toUpperCase().equals("IN_PROGRESS") || dto.getStatusDto().toUpperCase().equals("INPROGRESS")){
+            service.setStatus(ServiceStatus.IN_PROGRESS);
+        }else if(dto.getStatusDto().toUpperCase().equals("COMPLETED")){
+            service.setStatus(ServiceStatus.COMPLETED);
+        }else if(dto.getStatusDto().toUpperCase().equals("PENDING")){
+            service.setStatus(ServiceStatus.PENDING);
+        }else if(dto.getStatusDto().toUpperCase().equals("CANCELLED")){
+            service.setStatus(ServiceStatus.CANCELED);
+        }
+        if (dto.getUnitId() != null) service.setUnit(unitService.findUnitById(dto.getUnitId()));
+        if (dto.getAssigneeId() != null) service.setAssignee(assigneeService.findAssigneeById(dto.getAssigneeId()));
+
+        serviceRepository.save(service);
+
+        return mapToReadDto(service);
+    }
+
+    @Override
+    public void delete(Long id) {
+        serviceRepository.deleteById(id);
     }
 
 }

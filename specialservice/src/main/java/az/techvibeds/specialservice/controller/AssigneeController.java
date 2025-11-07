@@ -4,9 +4,7 @@ import az.techvibeds.specialservice.dtos.assignee.AssigneeCreateDto;
 import az.techvibeds.specialservice.dtos.assignee.AssigneeDetailDto;
 import az.techvibeds.specialservice.dtos.assignee.AssigneeReadDto;
 import az.techvibeds.specialservice.dtos.assignee.AssigneeUpdateDto;
-import az.techvibeds.specialservice.models.Assignee;
 import az.techvibeds.specialservice.payloads.ApiResponse;
-import az.techvibeds.specialservice.services.ActivityService;
 import az.techvibeds.specialservice.services.AssigneeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +19,6 @@ import java.util.List;
 public class AssigneeController {
 
     private final AssigneeService assigneeService;
-    private final ActivityService activityService;
 
 
     @PostMapping
@@ -43,8 +40,6 @@ public class AssigneeController {
     @GetMapping("/{id}")
     public ResponseEntity<AssigneeDetailDto> getAssigneeDetails(@PathVariable Long id) {
         AssigneeDetailDto dto = assigneeService.findAssigneeByIdDetailDto(id);
-        Assignee assignee = assigneeService.findAssigneeById(id);
-        dto.setActivitiesDto(activityService.findAllByAssigneeId(assignee));
         return ResponseEntity.ok(dto);
     }
     @GetMapping

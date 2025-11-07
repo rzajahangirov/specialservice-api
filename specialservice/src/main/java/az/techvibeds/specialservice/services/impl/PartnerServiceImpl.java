@@ -1,10 +1,7 @@
 package az.techvibeds.specialservice.services.impl;
 
 import az.techvibeds.specialservice.dtos.balace.CreateBalanceDto;
-import az.techvibeds.specialservice.dtos.partner.PartnerCreateDto;
-import az.techvibeds.specialservice.dtos.partner.PartnerDto;
-import az.techvibeds.specialservice.dtos.partner.PartnerReadDto;
-import az.techvibeds.specialservice.dtos.partner.PartnerUpdateDto;
+import az.techvibeds.specialservice.dtos.partner.*;
 import az.techvibeds.specialservice.enums.PartnerType;
 import az.techvibeds.specialservice.models.Balance;
 import az.techvibeds.specialservice.models.Company;
@@ -24,6 +21,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -84,28 +82,10 @@ public class PartnerServiceImpl implements PartnerService {
 
 
     @Override
-    public List<PartnerDto> getPartners(String userEmail) {
+    public List<PartnerDto> getAllPartnersByCompany(String userEmail) {
         Company company = companyService.findByUserEmail(userEmail);
         List<Partner> partners = partnerRepository.findAllByCompanyId(company.getId());
-        List<PartnerDto> partnerDtos = new ArrayList<>();
-
-        for (Partner partner : partners) {
-            PartnerDto dto = new PartnerDto();
-            dto.setId(partner.getId());
-            dto.setName(partner.getName());
-            dto.setContactPerson(partner.getContactPerson());
-            dto.setEmail(partner.getEmail());
-            dto.setPhone(partner.getPhone());
-            dto.setBalance(partner.getBalance().getAmount());
-            dto.setCurrency(partner.getBalance().getCurrencyType());
-
-            String partnerType = partner.getPartnerType().toString();
-            dto.setPartnerType(partnerType.substring(0, 1).toUpperCase() + partnerType.substring(1).toLowerCase());
-
-            partnerDtos.add(dto);
-        }
-
-        return partnerDtos;
+        return mapToDtoList(partners);
     }
 
 
@@ -265,6 +245,23 @@ public class PartnerServiceImpl implements PartnerService {
         }
     }
 
+    @Override
+    public PartnerTypeDto getPartnerTypes() {
+        PartnerTypeDto partnerTypeDto = new PartnerTypeDto();
+        partnerTypeDto.setPartnerTypes(
+                Arrays.stream(PartnerType.values())
+                        .map(Enum::name)
+                        .toList()
+        );
+        return partnerTypeDto;
+    }
+
+    @Override
+    public List<PartnerDto> findByPartnerTypeAndCompany_Id(String type, String email) throws Exception {
+        List<Partner> partners = partnerRepository.findAllByCompanyIdAndPartnerType(companyService.findByUserEmail(email).getId(),parsePartnerTypeFromRow(type));
+        return mapToDtoList(partners);
+    }
+
 
     private PartnerReadDto mapToReadDto(Partner partner) {
         PartnerReadDto readDto = new PartnerReadDto();
@@ -277,5 +274,25 @@ public class PartnerServiceImpl implements PartnerService {
         readDto.setCurrency(partner.getBalance().getCurrencyType());
         readDto.setPartnerType(partner.getPartnerType().name());
         return readDto;
+    }
+    private List<PartnerDto> mapToDtoList(List<Partner> partners) {
+        List<PartnerDto> partnerDtos = new ArrayList<>();
+
+        for (Partner partner : partners) {
+            PartnerDto dto = new PartnerDto();
+            dto.setId(partner.getId());
+            dto.setName(partner.getName());
+            dto.setContactPerson(partner.getContactPerson());
+            dto.setEmail(partner.getEmail());
+            dto.setPhone(partner.getPhone());
+            dto.setBalance(partner.getBalance().getAmount());
+            dto.setCurrency(partner.getBalance().getCurrencyType());
+
+            String partnerType = partner.getPartnerType().toString();
+            dto.setPartnerType(partnerType.substring(0, 1).toUpperCase() + partnerType.substring(1).toLowerCase());
+
+            partnerDtos.add(dto);
+        }
+        return partnerDtos;
     }
 }

@@ -5,22 +5,23 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "assignees")
-public class Assignee {
+@Table(name = "projectExpenses")
+public class ProjectExpense {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
-    private Integer activeServiceCount;
-    private Integer totalCapacity;
+    private BigDecimal amount;
+    private LocalDate date;
 
-    @ManyToOne
-    private Company company;
-
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "project_id")
+    private ConstructionProject project;
 }

@@ -1,9 +1,6 @@
 package az.techvibeds.specialservice.services;
 
-import az.techvibeds.specialservice.dtos.partner.PartnerCreateDto;
-import az.techvibeds.specialservice.dtos.partner.PartnerDto;
-import az.techvibeds.specialservice.dtos.partner.PartnerReadDto;
-import az.techvibeds.specialservice.dtos.partner.PartnerUpdateDto;
+import az.techvibeds.specialservice.dtos.partner.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
@@ -14,7 +11,7 @@ public interface PartnerService {
 
     PartnerReadDto createSupplier(PartnerCreateDto partnerCreateDto, String name);
 
-    List<PartnerDto> getPartners(String name);
+    List<PartnerDto> getAllPartnersByCompany(String name);
 
     void importFromExcel(MultipartFile file, String name) throws Exception;
 
@@ -23,4 +20,8 @@ public interface PartnerService {
     void delete(Long id);
 
     ByteArrayInputStream exportToExcel(String name) throws Exception;
+
+    PartnerTypeDto getPartnerTypes();
+
+    List<PartnerDto> findByPartnerTypeAndCompany_Id(String partnerType, String email) throws Exception;
 }

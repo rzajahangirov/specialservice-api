@@ -5,22 +5,20 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "assignees")
-public class Assignee {
+@Table(name = "projectStatuses")
+public class ProjectStatus {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
-    private Integer activeServiceCount;
-    private Integer totalCapacity;
 
-    @ManyToOne
-    private Company company;
-
+    @OneToMany(mappedBy = "status", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<ConstructionProject> constructionProjects = new ArrayList<>();
 }

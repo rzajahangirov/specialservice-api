@@ -2,6 +2,7 @@ package az.techvibeds.specialservice.controller;
 
 
 import az.techvibeds.specialservice.dtos.service.*;
+import az.techvibeds.specialservice.payloads.ApiResponse;
 import az.techvibeds.specialservice.services.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -29,4 +30,15 @@ public class ServiceController {
                                                         @RequestBody ServiceCreateDto dto) {
         return ResponseEntity.ok(serviceService.createService(principal.getName(), dto));
     }
+    @PutMapping
+    public ResponseEntity<ServiceReadDto> updateService(@RequestBody ServiceUpdateDto dto){
+        return ResponseEntity.ok(serviceService.updateService(dto));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse> deleteService(@PathVariable Long id) {
+        serviceService.delete(id);
+        return ResponseEntity.ok(new ApiResponse("Service deleted", true));
+    }
+
 }
