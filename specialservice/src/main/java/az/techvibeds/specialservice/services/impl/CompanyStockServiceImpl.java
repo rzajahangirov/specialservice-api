@@ -1,6 +1,6 @@
 package az.techvibeds.specialservice.services.impl;
 
-import az.techvibeds.specialservice.dtos.companyStock.CompanyStockInventoryDto;
+import az.techvibeds.specialservice.dtos.companystock.CompanyStockInventoryDto;
 import az.techvibeds.specialservice.models.Company;
 import az.techvibeds.specialservice.models.CompanyStock;
 import az.techvibeds.specialservice.repositories.CompanyStockRepository;
@@ -25,28 +25,37 @@ public class CompanyStockServiceImpl implements CompanyStockService {
     private final ProductService productService;
 
 
-    //Cari Stok deyeri ve oten ayin ortalama stock sayisina nisbet faizi
     @Override
     public CompanyStockInventoryDto findStockCount(Long companyId) {
+
         LocalDate now = LocalDate.now();
         LocalDate firstDayOfLastMonth = now.minusMonths(1).withDayOfMonth(1);
         LocalDate lastDayOfLastMonth = now.minusMonths(1).withDayOfMonth(now.minusMonths(1).lengthOfMonth());
-        List<CompanyStock> companyStockList = companyStockRepository.findByCompanyIdAndDateBetween(companyId, firstDayOfLastMonth, lastDayOfLastMonth);
-        Long monthlyStockAvg = 0L;
-        for (CompanyStock companyStock : companyStockList) {
-            monthlyStockAvg+=companyStock.getStockCount();
+
+        List<CompanyStock> companyStockList = companyStockRepository
+                .findByCompanyIdAndDateBetween(companyId, firstDayOfLastMonth, lastDayOfLastMonth);
+
+        CompanyStockInventoryDto dto = new CompanyStockInventoryDto();
+
+        long nowStockCount = calculateStockForCompany(companyId);
+        dto.setStockCount(nowStockCount);
+
+
+        if (!companyStockList.isEmpty()) {
+            double monthlyAvg = companyStockList.stream()
+                    .mapToLong(CompanyStock::getStockCount)
+                    .average()
+                    .orElse(0);
+
+            double growthRate = ((nowStockCount / monthlyAvg) - 1) * 100;
+            dto.setGrowthRate(String.format("%.2f", growthRate));
+        } else {
+            dto.setGrowthRate("N/A");
         }
-        monthlyStockAvg/=companyStockList.size();
-        Long nowStockCount = calculateStockForCompany(companyId);
-        CompanyStockInventoryDto companyStockInventoryDto = new CompanyStockInventoryDto();
-        companyStockInventoryDto.setStockCount(nowStockCount);
 
-        Double growthRate = ((nowStockCount/monthlyStockAvg)-1.0)*100;
-        String formatted = String.format("%.2f", growthRate);
-
-        companyStockInventoryDto.setGrowthRate(formatted);
-        return companyStockInventoryDto;
+        return dto;
     }
+
 
 
     //gundelik sirketin umumi stokunu yadda saxlayir

@@ -1,16 +1,21 @@
 package az.techvibeds.specialservice.services.impl;
 
 import az.techvibeds.specialservice.enums.ProductStatus;
+import az.techvibeds.specialservice.models.Company;
 import az.techvibeds.specialservice.models.Product;
 import az.techvibeds.specialservice.models.Warehouse;
 import az.techvibeds.specialservice.models.WarehouseProduct;
 import az.techvibeds.specialservice.repositories.ProductRepository;
 import az.techvibeds.specialservice.repositories.WarehouseProductRepository;
 import az.techvibeds.specialservice.repositories.WarehouseRepository;
+import az.techvibeds.specialservice.services.CompanyService;
 import az.techvibeds.specialservice.services.WarehouseProductService;
 import az.techvibeds.specialservice.services.WarehouseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +24,7 @@ public class WarehouseProductServiceImpl implements WarehouseProductService {
     private final WarehouseService warehouseService;
     private final ProductRepository productRepository;
     private final WarehouseRepository warehouseRepository;
+    private final CompanyService companyService;
 
     @Override
     public WarehouseProduct createWarehouseProduct(Product product, Long warehouseId, double quantity) {
@@ -35,7 +41,7 @@ public class WarehouseProductServiceImpl implements WarehouseProductService {
     }
 
     @Override
-    public void removeFromWarehouse(String productCode, Long warehouseId, Integer quantity) throws Exception {
+    public void removeFromWarehouse(String productCode, Long warehouseId, Integer quantity, String userEmail) throws Exception {
 
         Product product = productRepository.findByProductCode(productCode);
         if (product == null) {
@@ -48,28 +54,35 @@ public class WarehouseProductServiceImpl implements WarehouseProductService {
         if (warehouseProduct == null) {
             throw new Exception("This product does not exist in the specified warehouse.");
         }
+        Company company = companyService.findByUserEmail(userEmail);
+        if (warehouse.getCompany() == company && product.getCompany() == company) {
+
+            if (warehouseProduct.getQuantity() < quantity) {
+                throw new Exception("Not enough stock in warehouse. Current quantity: " + warehouseProduct.getQuantity());
+            }
 
 
-        if (warehouseProduct.getQuantity() < quantity) {
-            throw new Exception("Not enough stock in warehouse. Current quantity: " + warehouseProduct.getQuantity());
-        }
-
-
-        if (quantity<0){warehouseProduct.setQuantity(warehouseProduct.getQuantity() - quantity);}
-        else {throw new Exception("Quantity mast be greater than zero");}
-        product.setStock(product.getStock() - quantity);
-        productRepository.save(product);
-        warehouseProductRepository.save(warehouseProduct);
-
-
-        if (product.getStock() == 0) {
-            product.setProductStatus(ProductStatus.LOW_STOCK);
+            if (quantity < 0) {
+                warehouseProduct.setQuantity(warehouseProduct.getQuantity() - quantity);
+            } else {
+                throw new Exception("Quantity mast be greater than zero");
+            }
+            product.setStock(product.getStock() - quantity);
             productRepository.save(product);
+            warehouseProductRepository.save(warehouseProduct);
+
+
+            if (product.getStock() == 0) {
+                product.setProductStatus(ProductStatus.LOW_STOCK);
+                productRepository.save(product);
+            }
+        }else {
+            throw new Exception("Mehsul ve ya anbar sizin sirkete aid deyil");
         }
     }
 
     @Override
-    public void transferProductBetweenWarehouses(String productCode, Long fromWarehouseId, Long toWarehouseId, int quantity) throws Exception {
+    public void transferProductBetweenWarehouses(String productCode, Long fromWarehouseId, Long toWarehouseId, int quantity, String userEmail) throws Exception {
 
         Product product = productRepository.findByProductCode(productCode);
         if (product == null) {
@@ -91,22 +104,29 @@ public class WarehouseProductServiceImpl implements WarehouseProductService {
 
         Warehouse toWarehouse = warehouseService.getWarehouseById(toWarehouseId);
         WarehouseProduct toWarehouseProduct = warehouseProductRepository.findByProductAndWarehouse(product, toWarehouse);
+        Company company = companyService.findByUserEmail(userEmail);
+        if (fromWarehouse.getCompany() == company && product.getCompany() == company && toWarehouse.getCompany() == company) {
 
 
-        if (toWarehouseProduct == null) {
-            toWarehouseProduct = new WarehouseProduct();
-            toWarehouseProduct.setProduct(product);
-            toWarehouseProduct.setWarehouse(toWarehouse);
-            toWarehouseProduct.setQuantity(0);
+            if (toWarehouseProduct == null) {
+                toWarehouseProduct = new WarehouseProduct();
+                toWarehouseProduct.setProduct(product);
+                toWarehouseProduct.setWarehouse(toWarehouse);
+                toWarehouseProduct.setQuantity(0);
+            }
+
+            if (toWarehouseProduct.getQuantity() > 0) {
+                fromWarehouseProduct.setQuantity(fromWarehouseProduct.getQuantity() - quantity);
+                toWarehouseProduct.setQuantity(toWarehouseProduct.getQuantity() + quantity);
+            } else {
+                throw new Exception("Quantity mast be greater than zero");
+            }
+
+            warehouseProductRepository.save(fromWarehouseProduct);
+            warehouseProductRepository.save(toWarehouseProduct);
+        }else {
+            throw new Exception("Bu mehsula ve ya anbarlara giris icazeniz yoxdur, sizin sirkete aid deyiller");
         }
-
-        if (toWarehouseProduct.getQuantity() > 0) {
-            fromWarehouseProduct.setQuantity(fromWarehouseProduct.getQuantity() - quantity);
-            toWarehouseProduct.setQuantity(toWarehouseProduct.getQuantity() + quantity);
-        }else{throw new Exception("Quantity mast be greater than zero");}
-
-        warehouseProductRepository.save(fromWarehouseProduct);
-        warehouseProductRepository.save(toWarehouseProduct);
     }
 
     @Override
@@ -125,12 +145,16 @@ public class WarehouseProductServiceImpl implements WarehouseProductService {
     }
 
     @Override
-    public void deleteWarehouseProduct(Long id) {
+    public void deleteWarehouseProduct(Long id, String userEmail) {
         WarehouseProduct warehouseProduct = findWarehouseProductById(id);
         Product product = warehouseProduct.getProduct();
-        product.setStock(product.getStock() - warehouseProduct.getQuantity());
-        productRepository.save(product);
-        warehouseProductRepository.deleteById(id);
+        if (product.getCompany() == companyService.findByUserEmail(userEmail)) {
+            product.setStock(product.getStock() - warehouseProduct.getQuantity());
+            productRepository.save(product);
+            warehouseProductRepository.deleteById(id);
+        }else {
+            throw new RuntimeException("Bu mehsul sirketinize aid deyil");
+        }
     }
 
     @Override
@@ -145,6 +169,23 @@ public class WarehouseProductServiceImpl implements WarehouseProductService {
         warehouseProduct.setWarehouse(warehouseService.getWarehouseByName(warehouseName));
         warehouseProductRepository.save(warehouseProduct);
         return warehouseProduct;
+    }
+
+    @Override
+    public List<WarehouseProduct> findWarehouseProductByCompany_Id(List<Warehouse> warehouseList) {
+        List<WarehouseProduct> warehouseProductList = new ArrayList<>();
+        for (Warehouse warehouse : warehouseList) {
+            List<WarehouseProduct> warehouseProducts = warehouseProductRepository.findAllByWarehouse_Id(warehouse.getId());
+            for (WarehouseProduct warehouseProduct : warehouseProducts) {
+                warehouseProductList.add(warehouseProduct);
+            }
+        }
+        return warehouseProductList;
+    }
+
+    @Override
+    public List<WarehouseProduct> findWarehouseProductByWarehouseId(Long warehouseId) {
+        return warehouseProductRepository.findAllByWarehouse_Id(warehouseId);
     }
 
 }

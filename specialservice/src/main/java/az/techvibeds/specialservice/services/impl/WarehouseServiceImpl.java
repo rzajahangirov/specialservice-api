@@ -4,7 +4,6 @@ import az.techvibeds.specialservice.dtos.warehouse.WarehouseCreateDto;
 import az.techvibeds.specialservice.dtos.warehouse.WarehouseReadDto;
 import az.techvibeds.specialservice.dtos.warehouse.WarehouseUpdateDto;
 import az.techvibeds.specialservice.models.Warehouse;
-import az.techvibeds.specialservice.models.WarehouseProduct;
 import az.techvibeds.specialservice.repositories.WarehouseRepository;
 import az.techvibeds.specialservice.services.CompanyService;
 import az.techvibeds.specialservice.services.WarehouseService;
@@ -30,7 +29,7 @@ public class WarehouseServiceImpl implements WarehouseService {
     }
 
     @Override
-    public List<WarehouseProduct> findAllByCompany_Id(Long companyId) {
+    public List<Warehouse> findAllByCompany_Id(Long companyId) {
         return warehouseRepository.findByCompany_Id(companyId);
     }
 
@@ -79,6 +78,11 @@ public class WarehouseServiceImpl implements WarehouseService {
 
     @Override
     public Warehouse getWarehouseById(Long warehouseId) {
+        return warehouseRepository.findById(warehouseId).orElseThrow();
+    }
+
+    @Override
+    public Warehouse findById(Long warehouseId) {
         return warehouseRepository.findById(warehouseId).orElseThrow();
     }
 

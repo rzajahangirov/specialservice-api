@@ -1,4 +1,4 @@
-package az.techvibeds.specialservice.dtos.companyStock;
+package az.techvibeds.specialservice.dtos.companystock;
 
 import lombok.*;
 

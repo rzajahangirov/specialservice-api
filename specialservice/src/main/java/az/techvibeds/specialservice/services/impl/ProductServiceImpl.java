@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,6 +32,7 @@ public class ProductServiceImpl implements ProductService {
     private final WarehouseService warehouseService;
     private final CategoryService categoryService;
     private final WarehouseProductService warehouseProductService;
+    private final CompanyService companyService;
 
     @Override
     public Long calculateCompanyStock(Long companyId) {
@@ -50,23 +52,8 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public List<ProductInventoryDto> getProductsByCompanyId(Long companyId) {
-        List<WarehouseProduct> warehouseProductList = warehouseService.findAllByCompany_Id(companyId);
-        List<ProductInventoryDto> productInventoryDtoList =  new ArrayList<>();
-        for (WarehouseProduct warehouseProduct : warehouseProductList) {
-            ProductInventoryDto productInventoryDto = new ProductInventoryDto();
-            Product product = warehouseProduct.getProduct();
-            productInventoryDto.setId(warehouseProduct.getId());
-            productInventoryDto.setProductCode(product.getProductCode());
-            productInventoryDto.setName(product.getName());
-            productInventoryDto.setPrice(product.getPrice());
-            //anbarda ne qeder varsa o sayi gosderilir
-            productInventoryDto.setStock(warehouseProduct.getQuantity());
-            productInventoryDto.setProductStatus(product.getProductStatus().name());
-            productInventoryDto.setCategory(product.getCategory().getName());
-            productInventoryDto.setWarehouse(warehouseProduct.getWarehouse().getName());
-            productInventoryDtoList.add(productInventoryDto);
-        }
-        return productInventoryDtoList;
+        List<WarehouseProduct> warehouseProductList = warehouseProductService.findWarehouseProductByCompany_Id(warehouseService.findAllByCompany_Id(companyId));
+        return warehouseProductToProductInventoryDto(warehouseProductList);
     }
 
     @Override
@@ -180,31 +167,86 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductReadDto updateInventorProduct(ProductInventoryUpdateDto productInventoryUpdateDto) throws Exception {
+    public ProductReadDto updateInventorProduct(ProductInventoryUpdateDto productInventoryUpdateDto, String userEmail) throws Exception {
         WarehouseProduct warehouseProduct = warehouseProductService.findWarehouseProductById(productInventoryUpdateDto.getWarehouseProductId());
         Product product = warehouseProduct.getProduct();
-        product.setName(productInventoryUpdateDto.getName());
-        product.setProductCode(productInventoryUpdateDto.getProductCode());
-        product.setPrice(productInventoryUpdateDto.getPrice());
-        product.setCategory(categoryService.findById(productInventoryUpdateDto.getCategoryId()));
+        Company company = companyService.findByUserEmail(userEmail);
+        if (product.getCompany() == company && warehouseService.findById(productInventoryUpdateDto.getWarehouseId()).getCompany() == company) {
+            product.setName(productInventoryUpdateDto.getName());
+            product.setProductCode(productInventoryUpdateDto.getProductCode());
+            product.setPrice(productInventoryUpdateDto.getPrice());
+            product.setCategory(categoryService.findById(productInventoryUpdateDto.getCategoryId()));
 
-        if (productInventoryUpdateDto.getProductStatus().toUpperCase().equals("IN STOCK") || productInventoryUpdateDto.getProductStatus().toUpperCase().equals("IN_STOCK")) {
-            product.setProductStatus(ProductStatus.IN_STOCK);
-        }else if (productInventoryUpdateDto.getProductStatus().toUpperCase().equals("LOW_STOCK") || productInventoryUpdateDto.getProductStatus().toUpperCase().equals("LOW_STOCK")) {
-            product.setProductStatus(ProductStatus.LOW_STOCK);
-        }else if (productInventoryUpdateDto.getProductStatus().toUpperCase().equals("INACTIVE")) {
-            product.setProductStatus(ProductStatus.INACTIVE);
+            if (productInventoryUpdateDto.getProductStatus().toUpperCase().equals("IN STOCK") || productInventoryUpdateDto.getProductStatus().toUpperCase().equals("IN_STOCK")) {
+                product.setProductStatus(ProductStatus.IN_STOCK);
+            } else if (productInventoryUpdateDto.getProductStatus().toUpperCase().equals("LOW_STOCK") || productInventoryUpdateDto.getProductStatus().toUpperCase().equals("LOW_STOCK")) {
+                product.setProductStatus(ProductStatus.LOW_STOCK);
+            } else if (productInventoryUpdateDto.getProductStatus().toUpperCase().equals("INACTIVE")) {
+                product.setProductStatus(ProductStatus.INACTIVE);
+            } else {
+                throw new Exception(" product status not recognized");
+            }
+
+            Integer stock = warehouseProductService.updateInventoryWarehouseProduct(warehouseProduct, productInventoryUpdateDto.getWarehouseId(), productInventoryUpdateDto.getQuantity());
+
+            if (productInventoryUpdateDto.getQuantity() > 0) {
+                product.setStock(product.getStock() - stock + productInventoryUpdateDto.getQuantity().longValue());
+            } else {
+                throw new Exception("Quantity must be greater than zero");
+            }
+
+            productRepository.save(product);
+            return mapToProductReadDto(product, warehouseProduct);
         }else {
-            throw new Exception(" product status not recognized");
+            throw  new Exception("Bu mehsula ve ya anbara giris icazeniz yoxsur");
         }
+    }
 
-        Integer stock = warehouseProductService.updateInventoryWarehouseProduct(warehouseProduct,productInventoryUpdateDto.getWarehouseId(),productInventoryUpdateDto.getQuantity());
+    @Override
+    public List<ProductInventoryDto> getFilteredProducts(Long warehouseId, Long categoryId, String productStatus, String userEmail) {
+        Long companyId = companyService.findByUserEmail(userEmail).getId();
+        List<WarehouseProduct> warehouseProductList;
+        if (warehouseId == null) {
+            warehouseProductList = warehouseProductService
+                    .findWarehouseProductByCompany_Id(warehouseService.findAllByCompany_Id(companyId));
+        }else if (warehouseService.findById(warehouseId).getCompany() == companyService.findByUserEmail(userEmail)) {
+            warehouseProductList = warehouseProductService
+                    .findWarehouseProductByWarehouseId(warehouseId);
+        }else{
+          throw new RuntimeException("Qeyd etdiyiniz anbar size aid deyil");
+        }
+        List<WarehouseProduct> filteredWarehouseProducts = new ArrayList<>();
+        if (categoryId != null || productStatus != null) {
+            for (WarehouseProduct warehouseProduct : warehouseProductList) {
 
-        if (productInventoryUpdateDto.getQuantity()>0){product.setStock(product.getStock()-stock+productInventoryUpdateDto.getQuantity().longValue());}
-        else{throw new Exception("Quantity must be greater than zero");}
+                boolean categoryMatches = (categoryId == null)
+                        || warehouseProduct.getProduct().getCategory().getId().equals(categoryId);
 
-        productRepository.save(product);
-        return mapToProductReadDto(product,warehouseProduct);
+                boolean statusMatches = (productStatus == null)
+                        || warehouseProduct.getProduct().getProductStatus().name().equals(productStatus);
+
+                if (categoryMatches && statusMatches) {
+                    filteredWarehouseProducts.add(warehouseProduct);
+                }
+            }
+            return warehouseProductToProductInventoryDto(filteredWarehouseProducts);
+        }else{
+            return warehouseProductToProductInventoryDto(warehouseProductList);
+        }
+    }
+
+    @Override
+    public List<ProductInventoryDto> getSearchedProducts(String productName, Principal principal) {
+        Long companyId = companyService.findByUserEmail(principal.getName()).getId();
+        List<Product> productList= productRepository.searchProductsByCompanyAndKeyword(companyId, productName);
+        List<WarehouseProduct> warehouseProductList= new ArrayList<>();
+        for (Product product : productList) {
+            List<WarehouseProduct> warehouseProductList2 = product.getWarehouseProducts();
+            for (WarehouseProduct warehouseProduct : warehouseProductList2) {
+                warehouseProductList.add(warehouseProduct);
+            }
+        }
+        return warehouseProductToProductInventoryDto(warehouseProductList);
     }
 
     private ProductReadDto mapToProductReadDto(Product product, WarehouseProduct warehouseProduct) {
@@ -216,6 +258,24 @@ public class ProductServiceImpl implements ProductService {
         productReadDto.setWarehouseName(warehouseProduct.getWarehouse().getName());
         productReadDto.setQuantity(warehouseProduct.getQuantity());
         return productReadDto;
+    }
+    private List<ProductInventoryDto> warehouseProductToProductInventoryDto(List<WarehouseProduct> warehouseProductList) {
+        List<ProductInventoryDto> productInventoryDtoList = new ArrayList<>();
+        for (WarehouseProduct warehouseProduct : warehouseProductList) {
+            ProductInventoryDto productInventoryDto = new ProductInventoryDto();
+            Product product = warehouseProduct.getProduct();
+            productInventoryDto.setId(warehouseProduct.getId());
+            productInventoryDto.setProductCode(product.getProductCode());
+            productInventoryDto.setName(product.getName());
+            productInventoryDto.setPrice(product.getPrice());
+            //anbarda ne qeder varsa o sayi gosderilir
+            productInventoryDto.setStock(warehouseProduct.getQuantity());
+            productInventoryDto.setProductStatus(product.getProductStatus().name());
+            productInventoryDto.setCategory(product.getCategory().getName());
+            productInventoryDto.setWarehouse(warehouseProduct.getWarehouse().getName());
+            productInventoryDtoList.add(productInventoryDto);
+        }
+        return productInventoryDtoList;
     }
 
 

@@ -1,7 +1,8 @@
 package az.techvibeds.specialservice.controller;
 
-import az.techvibeds.specialservice.dtos.companyStock.CompanyStockInventoryDto;
+
 import az.techvibeds.specialservice.dtos.inventory.InventoryDto;
+import az.techvibeds.specialservice.dtos.inventory.ProductStatusDto;
 import az.techvibeds.specialservice.dtos.product.ProductCreateDto;
 import az.techvibeds.specialservice.dtos.product.ProductInventoryDto;
 import az.techvibeds.specialservice.dtos.product.ProductInventoryUpdateDto;
@@ -20,35 +21,15 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/api/inventory")
 public class InventoryController {
-    private final CompanyStockService companyStockService;
     private final ProductService productService;
-    private final WarehouseActivityService warehouseActivityService;
     private final CompanyService companyService;
     private final WarehouseProductService warehouseProductService;
+    private final InventoryService inventoryService;
 
     //Melumatlarin getirilmesi
     @GetMapping
     public ResponseEntity<InventoryDto> inventory(Principal principal) {
-        Long companyId = companyService.findByUserEmail(principal.getName()).getId();
-
-        //Cari Stock Deyeri
-        CompanyStockInventoryDto stockInventoryDto =  companyStockService.findStockCount(companyId);
-        InventoryDto inventoryDto = new InventoryDto();
-        inventoryDto.setStockCount(stockInventoryDto.getStockCount());
-        inventoryDto.setGrowthRate(stockInventoryDto.getGrowthRate()+"%");
-
-        //Umumi mehsul sayisi
-        Integer productCount = productService.getProductCountByCompany(companyId);
-        inventoryDto.setProductCount(productCount);
-
-        //Son Transfer
-        String lastTransfer = warehouseActivityService.getLastTransfer(companyId);
-        inventoryDto.setLastTransfer(lastTransfer);
-
-        //Inventar Siyahisi
-        List<ProductInventoryDto> productInventoryDtoList = productService.getProductsByCompanyId(companyId);
-        inventoryDto.setProductInventoryDtoList(productInventoryDtoList);
-
+        InventoryDto inventoryDto = inventoryService.getInventory(principal.getName());
         return ResponseEntity.ok(inventoryDto);
     }
 
@@ -68,9 +49,9 @@ public class InventoryController {
     }
     //Anbardan cixis
     @PostMapping("/remove")
-    public ResponseEntity<ApiResponse> removeFromWarehouse(@RequestParam String productCode, @RequestParam Long warehouseId, @RequestParam Integer quantity) {
+    public ResponseEntity<ApiResponse> removeFromWarehouse(@RequestParam String productCode, @RequestParam Long warehouseId, @RequestParam Integer quantity, Principal principal) {
         try {
-            warehouseProductService.removeFromWarehouse(productCode, warehouseId, quantity);
+            warehouseProductService.removeFromWarehouse(productCode, warehouseId, quantity, principal.getName());
             return ResponseEntity.ok(new ApiResponse("Product removed from warehouse successfully.", true));
         } catch (Exception e) {
             return ResponseEntity
@@ -81,9 +62,9 @@ public class InventoryController {
 
     //transfer
     @PostMapping("/warehouse-transfer")
-    public ResponseEntity<ApiResponse> transferProduct(@RequestParam String productCode, @RequestParam Long fromWarehouseId, @RequestParam Long toWarehouseId, @RequestParam int quantity) {
+    public ResponseEntity<ApiResponse> transferProduct(@RequestParam String productCode, @RequestParam Long fromWarehouseId, @RequestParam Long toWarehouseId, @RequestParam int quantity, Principal principal) {
         try {
-            warehouseProductService.transferProductBetweenWarehouses(productCode, fromWarehouseId, toWarehouseId, quantity);
+            warehouseProductService.transferProductBetweenWarehouses(productCode, fromWarehouseId, toWarehouseId, quantity, principal.getName());
             return ResponseEntity.ok(new ApiResponse("Product successfully transferred from " + fromWarehouseId + " to " + toWarehouseId, true));
         } catch (Exception e) {
             return ResponseEntity
@@ -94,17 +75,38 @@ public class InventoryController {
 
     //update inventory(warehouseProduct vasiesi ile hem product hemde warehouseProductUpdate olunur)
     @PutMapping
-    public ResponseEntity<ProductReadDto> updateInventory(@RequestBody ProductInventoryUpdateDto productInventoryUpdateDto) throws Exception {
-        ProductReadDto dto = productService.updateInventorProduct(productInventoryUpdateDto);
+    public ResponseEntity<ProductReadDto> updateInventory(@RequestBody ProductInventoryUpdateDto productInventoryUpdateDto, Principal principal) throws Exception {
+        ProductReadDto dto = productService.updateInventorProduct(productInventoryUpdateDto, principal.getName());
         return ResponseEntity.ok(dto);
     }
 
 
     //delete inventory
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse> deleteInventory(@PathVariable Long id) {
-        warehouseProductService.deleteWarehouseProduct(id);
+    public ResponseEntity<ApiResponse> deleteInventory(@PathVariable Long id, Principal principal) {
+        warehouseProductService.deleteWarehouseProduct(id, principal.getName());
         return ResponseEntity.ok(new ApiResponse("Product deleted successfully.", true));
+    }
+
+    @GetMapping("/get-status")
+    public ResponseEntity<ProductStatusDto> getInventoryStatus() {
+        ProductStatusDto productStatusDto = inventoryService.getProductStatuses();
+        return ResponseEntity.ok(productStatusDto);
+    }
+
+    @GetMapping("/filter")
+    public ResponseEntity<List<ProductInventoryDto>> filterProducts( @RequestParam(required = false) Long warehouseId,
+                                                                     @RequestParam(required = false) Long categoryId,
+                                                                     @RequestParam(required = false) String productStatus,
+                                                                     Principal principal){
+        List<ProductInventoryDto> productInventoryDtoList = productService
+                .getFilteredProducts(warehouseId, categoryId, productStatus, principal.getName());
+        return ResponseEntity.ok(productInventoryDtoList);
+    }
+    @GetMapping("/search")
+    public ResponseEntity<List<ProductInventoryDto>> searchProducts(@RequestParam String productName, Principal principal) {
+        List<ProductInventoryDto> productInventoryDtoList = productService.getSearchedProducts(productName, principal);
+        return ResponseEntity.ok(productInventoryDtoList);
     }
 
 }

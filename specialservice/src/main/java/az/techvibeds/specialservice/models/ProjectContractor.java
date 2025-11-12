@@ -12,13 +12,16 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "project_statuses")
-public class ProjectStatus {
+@Table(name = "project_contractors")
+public class ProjectContractor {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
+    private String contactPerson;
+    private String phoneNumber;
+    private String email;
 
-    @OneToMany(mappedBy = "status", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "projectContractor", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ConstructionProject> constructionProjects = new ArrayList<>();
 }

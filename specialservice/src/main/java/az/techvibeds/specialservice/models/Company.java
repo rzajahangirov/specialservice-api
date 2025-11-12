@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 @Getter
@@ -22,6 +23,12 @@ public class Company {
     @Column(nullable = false, unique = true)
     private String name;
 
+    @Column(precision = 19, scale = 2)
+    private BigDecimal budget;
+
+    @Column(precision = 19, scale = 2)
+    private BigDecimal usedBudget;
+
     @OneToMany(mappedBy = "company")
     private List<User> users = new ArrayList<>();
 
@@ -37,5 +44,6 @@ public class Company {
 
     @OneToMany(mappedBy = "company")
     private List<CompanyStock> companyStocks = new ArrayList<>();
+
 
 }

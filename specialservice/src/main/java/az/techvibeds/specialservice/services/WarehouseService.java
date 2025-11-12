@@ -4,7 +4,6 @@ import az.techvibeds.specialservice.dtos.warehouse.WarehouseCreateDto;
 import az.techvibeds.specialservice.dtos.warehouse.WarehouseReadDto;
 import az.techvibeds.specialservice.dtos.warehouse.WarehouseUpdateDto;
 import az.techvibeds.specialservice.models.Warehouse;
-import az.techvibeds.specialservice.models.WarehouseProduct;
 
 import java.util.List;
 
@@ -12,7 +11,7 @@ public interface WarehouseService {
 
     Warehouse getWarehouseByName(String warehouseName);
 
-    List<WarehouseProduct> findAllByCompany_Id(Long companyId);
+    List<Warehouse> findAllByCompany_Id(Long companyId);
 
     WarehouseReadDto create(WarehouseCreateDto dto, String email);
 
@@ -25,4 +24,6 @@ public interface WarehouseService {
     List<WarehouseReadDto> getAll();
 
     Warehouse getWarehouseById(Long warehouseId);
+
+    Warehouse findById(Long warehouseId);
 }

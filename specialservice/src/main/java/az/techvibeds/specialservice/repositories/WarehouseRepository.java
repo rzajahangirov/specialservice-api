@@ -10,6 +10,6 @@ import java.util.List;
 public interface WarehouseRepository extends JpaRepository<Warehouse, Long> {
     Warehouse findByName(String name);
 
-    List<WarehouseProduct> findByCompany_Id(Long companyId);
+    List<Warehouse> findByCompany_Id(Long companyId);
 
 }
