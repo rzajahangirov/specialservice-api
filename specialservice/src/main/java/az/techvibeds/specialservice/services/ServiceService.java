@@ -17,7 +17,7 @@ public interface ServiceService {
 
     ServiceGetDataDto getCompanyServicesData(String email);
 
-    ServiceReadDto updateService(ServiceUpdateDto dto);
+    ServiceReadDto updateService(ServiceUpdateDto dto, String userEmail);
 
-    void delete(Long id);
+    void delete(Long id, String userEmail);
 }

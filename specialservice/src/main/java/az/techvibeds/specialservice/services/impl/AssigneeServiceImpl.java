@@ -36,20 +36,17 @@ public class AssigneeServiceImpl implements AssigneeService {
 
     }
 
-    @Override
-    public List<AssigneeGetDto> getAllAssigneeByCompany(String name) {
-        Company company = companyService.findByUserEmail(name);
-        return assigneeRepository.findAllByCompany(company)
-                .stream()
-                .map(assignee -> modelMapper.map(assignee, AssigneeGetDto.class))
-                .collect(Collectors.toList());
-    }
 
     @Override
-    public AssigneeDetailDto findAssigneeByIdDetailDto(Long id) {
+    public AssigneeDetailDto findAssigneeByIdDetailDto(Long id, String userEmail) {
         Assignee assignee = findAssigneeById(id);
-        AssigneeDetailDto assigneeDetailDto = modelMapper.map(assignee, AssigneeDetailDto.class);
-        return assigneeDetailDto;
+        Company company = companyService.findByUserEmail(userEmail);
+        if (company == assignee.getCompany()) {
+            AssigneeDetailDto assigneeDetailDto = modelMapper.map(assignee, AssigneeDetailDto.class);
+            return assigneeDetailDto;
+        }else {
+            throw new RuntimeException("Company does not match");
+        }
     }
 
     @Override
@@ -68,29 +65,33 @@ public class AssigneeServiceImpl implements AssigneeService {
     }
 
     @Override
-    public AssigneeReadDto update(AssigneeUpdateDto dto) {
+    public AssigneeReadDto update(AssigneeUpdateDto dto, String userEmail) {
+        Company company = companyService.findByUserEmail(userEmail);
         Assignee assignee = assigneeRepository.findById(dto.getId())
                 .orElseThrow(() -> new RuntimeException("Assignee not found"));
+        if (company == assignee.getCompany()) {
+            assignee.setName(dto.getName());
+            assignee.setTotalCapacity(dto.getTotalCapacity());
+            assignee.setActiveServiceCount(dto.getActiveServiceCount());
+            assigneeRepository.save(assignee);
 
-        assignee.setName(dto.getName());
-        assignee.setTotalCapacity(dto.getTotalCapacity());
-        assignee.setActiveServiceCount(dto.getActiveServiceCount());
-        assigneeRepository.save(assignee);
-
-        return modelMapper.map(assignee, AssigneeReadDto.class);
+            return modelMapper.map(assignee, AssigneeReadDto.class);
+        }else{
+            throw new RuntimeException("Company does not match");
+        }
     }
 
 
     @Override
-    public void delete(Long id) {
-        assigneeRepository.deleteById(id);
+    public void delete(Long id, String userEmail) {
+        Assignee assignee = findAssigneeById(id);
+        Company company = companyService.findByUserEmail(userEmail);
+        if (company == assignee.getCompany()) {
+            assigneeRepository.delete(assignee);
+        }else {
+            throw new RuntimeException("Company does not match");
+        }
     }
-    @Override
-    public List<AssigneeReadDto> getAll() {
-        return assigneeRepository.findAll()
-                .stream()
-                .map(assignee -> modelMapper.map(assignee, AssigneeReadDto.class))
-                .collect(Collectors.toList());
-    }
+
 
 }

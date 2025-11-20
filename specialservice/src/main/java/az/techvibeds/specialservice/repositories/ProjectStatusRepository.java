@@ -1,7 +1,7 @@
 package az.techvibeds.specialservice.repositories;
 
 import az.techvibeds.specialservice.models.ProjectStatus;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface ProjectStatusRepository extends CrudRepository<ProjectStatus, Long> {
+public interface ProjectStatusRepository extends JpaRepository<ProjectStatus, Long> {
 }

@@ -1,4 +1,4 @@
-package az.techvibeds.specialservice.controller;
+package az.techvibeds.specialservice.controller.service;
 
 import az.techvibeds.specialservice.dtos.unit.UnitCreateDto;
 import az.techvibeds.specialservice.dtos.unit.UnitGetDto;

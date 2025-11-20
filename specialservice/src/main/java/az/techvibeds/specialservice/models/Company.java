@@ -45,5 +45,7 @@ public class Company {
     @OneToMany(mappedBy = "company")
     private List<CompanyStock> companyStocks = new ArrayList<>();
 
+    @OneToMany(mappedBy = "company")
+    private List<ProjectContractor> projectContractorList = new ArrayList<>();
 
 }

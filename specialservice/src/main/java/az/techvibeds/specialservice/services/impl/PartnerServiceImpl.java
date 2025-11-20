@@ -163,37 +163,46 @@ public class PartnerServiceImpl implements PartnerService {
 
 
     @Override
-    public PartnerReadDto updatePartner(PartnerUpdateDto dto) throws Exception {
+    public PartnerReadDto updatePartner(PartnerUpdateDto dto, String userEmail) throws Exception {
         Partner partner = partnerRepository.findById(dto.getId())
                 .orElseThrow(() -> new RuntimeException("Partner not found"));
+        Company company = companyService.findByUserEmail(userEmail);
+        if (company == partner.getCompany()) {
+            if (dto.getName() != null) partner.setName(dto.getName());
+            if (dto.getContactPerson() != null) partner.setContactPerson(dto.getContactPerson());
+            if (dto.getEmail() != null) partner.setEmail(dto.getEmail());
+            if (dto.getPhone() != null) partner.setPhone(dto.getPhone());
 
-        if (dto.getName() != null) partner.setName(dto.getName());
-        if (dto.getContactPerson() != null) partner.setContactPerson(dto.getContactPerson());
-        if (dto.getEmail() != null) partner.setEmail(dto.getEmail());
-        if (dto.getPhone() != null) partner.setPhone(dto.getPhone());
+            if (dto.getBalance() != null || dto.getCurrency() != null) {
+                Balance balance = new Balance();
+                if (dto.getBalance() != null) balance.setAmount(dto.getBalance());
+                if (dto.getCurrency() != null) balance.setCurrencyType(dto.getCurrency());
+                partner.setBalance(balance);
+            }
 
-        if (dto.getBalance() != null || dto.getCurrency() != null) {
-            Balance balance = new Balance();
-            if (dto.getBalance() != null) balance.setAmount(dto.getBalance());
-            if (dto.getCurrency() != null) balance.setCurrencyType(dto.getCurrency());
-            partner.setBalance(balance);
+            if (dto.getCustomerType() != null) {
+                partner.setPartnerType(parsePartnerTypeFromRow(dto.getCustomerType()));
+            }
+
+            partnerRepository.save(partner);
+
+            return mapToReadDto(partner);
+        }else {
+            throw new Exception("Company does not match");
         }
-
-        if (dto.getCustomerType() != null) {
-            partner.setPartnerType(parsePartnerTypeFromRow(dto.getCustomerType()));
-        }
-
-        partnerRepository.save(partner);
-
-        return mapToReadDto(partner);
     }
 
 
     @Override
-    public void delete(Long id) {
+    public void delete(Long id, String userEmail) {
         Partner partner = partnerRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Partner not found"));
-        partnerRepository.delete(partner);
+        Company company = companyService.findByUserEmail(userEmail);
+        if (company == partner.getCompany()) {
+            partnerRepository.delete(partner);
+        }else {
+            throw new RuntimeException("Company does not match");
+        }
     }
 
     @Override

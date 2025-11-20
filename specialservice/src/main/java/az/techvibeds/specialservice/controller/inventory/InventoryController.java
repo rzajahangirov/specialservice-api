@@ -1,4 +1,4 @@
-package az.techvibeds.specialservice.controller;
+package az.techvibeds.specialservice.controller.inventory;
 
 
 import az.techvibeds.specialservice.dtos.inventory.InventoryDto;

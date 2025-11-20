@@ -77,7 +77,7 @@ public class WarehouseProductServiceImpl implements WarehouseProductService {
                 productRepository.save(product);
             }
         }else {
-            throw new Exception("Mehsul ve ya anbar sizin sirkete aid deyil");
+            throw new Exception("Company does not match");
         }
     }
 
@@ -125,7 +125,7 @@ public class WarehouseProductServiceImpl implements WarehouseProductService {
             warehouseProductRepository.save(fromWarehouseProduct);
             warehouseProductRepository.save(toWarehouseProduct);
         }else {
-            throw new Exception("Bu mehsula ve ya anbarlara giris icazeniz yoxdur, sizin sirkete aid deyiller");
+            throw new Exception("Company does not match");
         }
     }
 
@@ -153,7 +153,7 @@ public class WarehouseProductServiceImpl implements WarehouseProductService {
             productRepository.save(product);
             warehouseProductRepository.deleteById(id);
         }else {
-            throw new RuntimeException("Bu mehsul sirketinize aid deyil");
+            throw new RuntimeException("Company does not match");
         }
     }
 

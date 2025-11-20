@@ -1,4 +1,4 @@
-package az.techvibeds.specialservice.controller;
+package az.techvibeds.specialservice.controller.transaction;
 
 import az.techvibeds.specialservice.dtos.partner.*;
 import az.techvibeds.specialservice.payloads.ApiResponse;
@@ -76,15 +76,15 @@ public class TransactionController {
 
     // Update partner elements
     @PutMapping("/update-partner")
-    public ResponseEntity<PartnerReadDto> updatePartner(@RequestBody PartnerUpdateDto partnerUpdateDto) throws Exception {
-        PartnerReadDto partnerReadDto = partnerService.updatePartner(partnerUpdateDto);
+    public ResponseEntity<PartnerReadDto> updatePartner(@RequestBody PartnerUpdateDto partnerUpdateDto, Principal principal) throws Exception {
+        PartnerReadDto partnerReadDto = partnerService.updatePartner(partnerUpdateDto, principal.getName());
         return new ResponseEntity<>(partnerReadDto, HttpStatus.OK);
     }
 
     // Delete partner
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse> deletePartner(@PathVariable Long id) {
-        partnerService.delete(id);
+    public ResponseEntity<ApiResponse> deletePartner(@PathVariable Long id, Principal principal) {
+        partnerService.delete(id, principal.getName());
         return ResponseEntity.ok(new ApiResponse("Partner deleted", true));
     }
 

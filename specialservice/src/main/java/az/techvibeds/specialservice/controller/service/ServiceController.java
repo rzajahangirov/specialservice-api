@@ -1,4 +1,4 @@
-package az.techvibeds.specialservice.controller;
+package az.techvibeds.specialservice.controller.service;
 
 
 import az.techvibeds.specialservice.dtos.service.*;
@@ -31,13 +31,13 @@ public class ServiceController {
         return ResponseEntity.ok(serviceService.createService(principal.getName(), dto));
     }
     @PutMapping
-    public ResponseEntity<ServiceReadDto> updateService(@RequestBody ServiceUpdateDto dto){
-        return ResponseEntity.ok(serviceService.updateService(dto));
+    public ResponseEntity<ServiceReadDto> updateService(@RequestBody ServiceUpdateDto dto, Principal principal) {
+        return ResponseEntity.ok(serviceService.updateService(dto, principal.getName()));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse> deleteService(@PathVariable Long id) {
-        serviceService.delete(id);
+    public ResponseEntity<ApiResponse> deleteService(@PathVariable Long id, Principal principal) {
+        serviceService.delete(id, principal.getName());
         return ResponseEntity.ok(new ApiResponse("Service deleted", true));
     }
 

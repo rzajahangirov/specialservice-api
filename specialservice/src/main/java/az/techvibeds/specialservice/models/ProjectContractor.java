@@ -24,4 +24,9 @@ public class ProjectContractor {
 
     @OneToMany(mappedBy = "projectContractor", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ConstructionProject> constructionProjects = new ArrayList<>();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "company_id", referencedColumnName = "id")
+    private Company company;
+
 }

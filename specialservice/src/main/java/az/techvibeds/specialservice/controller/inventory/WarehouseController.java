@@ -1,4 +1,4 @@
-package az.techvibeds.specialservice.controller;
+package az.techvibeds.specialservice.controller.inventory;
 
 import az.techvibeds.specialservice.dtos.warehouse.WarehouseCreateDto;
 import az.techvibeds.specialservice.dtos.warehouse.WarehouseReadDto;
@@ -27,24 +27,24 @@ public class WarehouseController {
     }
 
     @PutMapping
-    public ResponseEntity<WarehouseReadDto> update(@RequestBody WarehouseUpdateDto dto){
-        WarehouseReadDto updated = warehouseService.update(dto);
+    public ResponseEntity<WarehouseReadDto> update(@RequestBody WarehouseUpdateDto dto, Principal principal) {
+        WarehouseReadDto updated = warehouseService.update(dto, principal.getName());
         return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse> delete(@PathVariable Long id){
-        warehouseService.delete(id);
+    public ResponseEntity<ApiResponse> delete(@PathVariable Long id, Principal principal) {
+        warehouseService.delete(id, principal.getName());
         return ResponseEntity.ok(new ApiResponse("Warehouse deleted", true));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<WarehouseReadDto> getById(@PathVariable Long id){
-        return ResponseEntity.ok(warehouseService.getById(id));
+    public ResponseEntity<WarehouseReadDto> getById(@PathVariable Long id, Principal principal) {
+        return ResponseEntity.ok(warehouseService.getById(id, principal.getName()));
     }
 
     @GetMapping
-    public ResponseEntity<List<WarehouseReadDto>> getAll(){
-        return ResponseEntity.ok(warehouseService.getAll());
+    public ResponseEntity<List<WarehouseReadDto>> getAllByCompany(Principal principal) {
+        return ResponseEntity.ok(warehouseService.getAllByCompanyReadDto(principal.getName()));
     }
 }

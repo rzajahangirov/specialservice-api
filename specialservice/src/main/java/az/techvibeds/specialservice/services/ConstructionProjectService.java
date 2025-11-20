@@ -1,9 +1,12 @@
 package az.techvibeds.specialservice.services;
 
+import az.techvibeds.specialservice.dtos.constructionproject.ConstructionProjectDto;
 import az.techvibeds.specialservice.models.ConstructionProject;
 
 import java.util.List;
 
 public interface ConstructionProjectService {
     List<ConstructionProject> getAllByCompanyId(Long companyId);
+
+    List<ConstructionProjectDto> mapToConstructionProjectDto(List<ConstructionProject> constructionProjectList);
 }

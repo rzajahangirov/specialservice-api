@@ -3,6 +3,7 @@ package az.techvibeds.specialservice.services.impl;
 import az.techvibeds.specialservice.dtos.warehouse.WarehouseCreateDto;
 import az.techvibeds.specialservice.dtos.warehouse.WarehouseReadDto;
 import az.techvibeds.specialservice.dtos.warehouse.WarehouseUpdateDto;
+import az.techvibeds.specialservice.models.Company;
 import az.techvibeds.specialservice.models.Warehouse;
 import az.techvibeds.specialservice.repositories.WarehouseRepository;
 import az.techvibeds.specialservice.services.CompanyService;
@@ -30,7 +31,7 @@ public class WarehouseServiceImpl implements WarehouseService {
 
     @Override
     public List<Warehouse> findAllByCompany_Id(Long companyId) {
-        return warehouseRepository.findByCompany_Id(companyId);
+        return warehouseRepository.findAllByCompany_Id(companyId);
     }
 
     @Override
@@ -47,30 +48,46 @@ public class WarehouseServiceImpl implements WarehouseService {
     }
 
     @Override
-    public WarehouseReadDto update(WarehouseUpdateDto dto) {
+    public WarehouseReadDto update(WarehouseUpdateDto dto, String userEmail) {
         Warehouse warehouse = warehouseRepository.findById(dto.getId())
                 .orElseThrow(() -> new RuntimeException("Warehouse not found"));
-        warehouse.setName(dto.getName());
-        warehouse.setAddress(dto.getAddress());
-        warehouseRepository.save(warehouse);
-        return mapToReadDto(warehouse);
+        Company company = companyService.findByUserEmail(userEmail);
+        if (company == warehouse.getCompany()) {
+            warehouse.setName(dto.getName());
+            warehouse.setAddress(dto.getAddress());
+            warehouseRepository.save(warehouse);
+            return mapToReadDto(warehouse);
+        }else {
+            throw new RuntimeException("Company does not match");
+        }
     }
 
     @Override
-    public void delete(Long id) {
-        warehouseRepository.deleteById(id);
+    public void delete(Long id, String userEmail) {
+        Warehouse warehouse = findById(id);
+        Company company = companyService.findByUserEmail(userEmail);
+        if (company == warehouse.getCompany()) {
+            warehouseRepository.deleteById(id);
+        }else {
+            throw new RuntimeException("Company does not match");
+        }
     }
 
     @Override
-    public WarehouseReadDto getById(Long id) {
+    public WarehouseReadDto getById(Long id, String userEmail) {
         Warehouse warehouse = warehouseRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Warehouse not found"));
-        return mapToReadDto(warehouse);
+        Company company = companyService.findByUserEmail(userEmail);
+        if (company == warehouse.getCompany()) {
+            return mapToReadDto(warehouse);
+        }else {
+            throw new RuntimeException("Company does not match");
+        }
     }
 
     @Override
-    public List<WarehouseReadDto> getAll() {
-        return warehouseRepository.findAll()
+    public List<WarehouseReadDto> getAllByCompanyReadDto(String email) {
+        return warehouseRepository.findAllByCompany_Id(companyService.findByUserEmail(email).getId())
                 .stream()
                 .map(this::mapToReadDto)
                 .collect(Collectors.toList());

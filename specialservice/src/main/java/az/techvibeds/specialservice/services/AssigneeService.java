@@ -12,15 +12,13 @@ public interface AssigneeService {
 
     Assignee findAssigneeById(Long assigneeId);
 
-    List<AssigneeGetDto> getAllAssigneeByCompany(String name);
 
-    AssigneeDetailDto findAssigneeByIdDetailDto(Long id);
+    AssigneeDetailDto findAssigneeByIdDetailDto(Long id, String userEmail);
 
     AssigneeReadDto create(AssigneeCreateDto dto, Principal principal);
 
-    AssigneeReadDto update(AssigneeUpdateDto dto);
+    AssigneeReadDto update(AssigneeUpdateDto dto, String userEmail);
 
-    void delete(Long id);
+    void delete(Long id, String userEmail);
 
-    List<AssigneeReadDto> getAll();
 }

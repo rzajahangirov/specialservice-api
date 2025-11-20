@@ -15,13 +15,13 @@ public interface WarehouseService {
 
     WarehouseReadDto create(WarehouseCreateDto dto, String email);
 
-    WarehouseReadDto update(WarehouseUpdateDto dto);
+    WarehouseReadDto update(WarehouseUpdateDto dto, String userEmail);
 
-    void delete(Long id);
+    void delete(Long id, String userEmail);
 
-    WarehouseReadDto getById(Long id);
+    WarehouseReadDto getById(Long id, String userEmail);
 
-    List<WarehouseReadDto> getAll();
+    List<WarehouseReadDto> getAllByCompanyReadDto(String email);
 
     Warehouse getWarehouseById(Long warehouseId);
 

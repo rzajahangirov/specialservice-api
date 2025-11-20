@@ -134,32 +134,43 @@ public class ServiceServiceImpl implements ServiceService {
     }
 
     @Override
-    public ServiceReadDto updateService(ServiceUpdateDto dto) {
+    public ServiceReadDto updateService(ServiceUpdateDto dto, String userEmail) {
         Service service = serviceRepository.findById(dto.getId()).orElseThrow(() -> new RuntimeException("Service not found"));
-        if (dto.getName() != null) service.setName(dto.getName());
-        if (dto.getDescription() != null) service.setDescription(dto.getDescription());
-        if (dto.getAmount() != null) service.setAmount(dto.getAmount());
-        if (dto.getDeadline() != null) service.setDeadline(dto.getDeadline());
-        if (dto.getStatusDto().toUpperCase().equals("IN_PROGRESS") || dto.getStatusDto().toUpperCase().equals("INPROGRESS")){
-            service.setStatus(ServiceStatus.IN_PROGRESS);
-        }else if(dto.getStatusDto().toUpperCase().equals("COMPLETED")){
-            service.setStatus(ServiceStatus.COMPLETED);
-        }else if(dto.getStatusDto().toUpperCase().equals("PENDING")){
-            service.setStatus(ServiceStatus.PENDING);
-        }else if(dto.getStatusDto().toUpperCase().equals("CANCELLED")){
-            service.setStatus(ServiceStatus.CANCELED);
+        Company company = companyService.findByUserEmail(userEmail);
+        if (company == service.getCompany()) {
+            if (dto.getName() != null) service.setName(dto.getName());
+            if (dto.getDescription() != null) service.setDescription(dto.getDescription());
+            if (dto.getAmount() != null) service.setAmount(dto.getAmount());
+            if (dto.getDeadline() != null) service.setDeadline(dto.getDeadline());
+            if (dto.getStatusDto().toUpperCase().equals("IN_PROGRESS") || dto.getStatusDto().toUpperCase().equals("INPROGRESS")) {
+                service.setStatus(ServiceStatus.IN_PROGRESS);
+            } else if (dto.getStatusDto().toUpperCase().equals("COMPLETED")) {
+                service.setStatus(ServiceStatus.COMPLETED);
+            } else if (dto.getStatusDto().toUpperCase().equals("PENDING")) {
+                service.setStatus(ServiceStatus.PENDING);
+            } else if (dto.getStatusDto().toUpperCase().equals("CANCELLED")) {
+                service.setStatus(ServiceStatus.CANCELED);
+            }
+            if (dto.getUnitId() != null) service.setUnit(unitService.findUnitById(dto.getUnitId()));
+            if (dto.getAssigneeId() != null) service.setAssignee(assigneeService.findAssigneeById(dto.getAssigneeId()));
+
+            serviceRepository.save(service);
+
+            return mapToReadDto(service);
+        }else {
+            throw new RuntimeException("Company does not match");
         }
-        if (dto.getUnitId() != null) service.setUnit(unitService.findUnitById(dto.getUnitId()));
-        if (dto.getAssigneeId() != null) service.setAssignee(assigneeService.findAssigneeById(dto.getAssigneeId()));
-
-        serviceRepository.save(service);
-
-        return mapToReadDto(service);
     }
 
     @Override
-    public void delete(Long id) {
-        serviceRepository.deleteById(id);
+    public void delete(Long id, String userEmail) {
+        Company company = companyService.findByUserEmail(userEmail);
+        Service service = serviceRepository.findById(id).orElseThrow(() -> new RuntimeException("Service not found"));
+        if (company == service.getCompany()) {
+            serviceRepository.deleteById(id);
+        }else {
+            throw new RuntimeException("Company does not match");
+        }
     }
 
 }

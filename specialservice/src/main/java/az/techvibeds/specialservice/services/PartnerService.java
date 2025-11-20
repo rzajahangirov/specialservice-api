@@ -15,9 +15,9 @@ public interface PartnerService {
 
     void importFromExcel(MultipartFile file, String name) throws Exception;
 
-    PartnerReadDto updatePartner(PartnerUpdateDto partnerUpdateDto) throws Exception;
+    PartnerReadDto updatePartner(PartnerUpdateDto partnerUpdateDto, String userEmail) throws Exception;
 
-    void delete(Long id);
+    void delete(Long id, String userEmail);
 
     ByteArrayInputStream exportToExcel(String name) throws Exception;
 
