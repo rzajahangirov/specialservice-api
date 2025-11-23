@@ -14,5 +14,6 @@ public class ProjectExpenseCreateDto {
     private String name;
     private BigDecimal amount;
     private LocalDate date;
+    private Long projectId;
 }
 

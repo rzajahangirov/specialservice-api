@@ -13,11 +13,11 @@ public interface ProjectExpenseService {
 
     ProjectExpenseReadDto create(ProjectExpenseCreateDto dto);
 
-    ProjectExpenseReadDto getById(Long id);
+    ProjectExpenseReadDto getById(Long id, String userEmail);
 
-    List<ProjectExpenseReadDto> getAll();
+    List<ProjectExpenseReadDto> getAll(String userEmail);
 
-    ProjectExpenseReadDto update(Long id, ProjectExpenseUpdateDto dto);
+    ProjectExpenseReadDto update(Long id, ProjectExpenseUpdateDto dto, String userEmail);
 
-    void delete(Long id);
+    void delete(Long id, String userEmail);
 }

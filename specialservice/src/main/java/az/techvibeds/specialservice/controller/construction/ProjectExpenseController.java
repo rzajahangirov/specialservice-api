@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -25,25 +26,26 @@ public class ProjectExpenseController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ProjectExpenseReadDto> getById(@PathVariable Long id) {
-        return ResponseEntity.ok(projectExpenseService.getById(id));
+    public ResponseEntity<ProjectExpenseReadDto> getById(@PathVariable Long id, Principal principal) {
+        return ResponseEntity.ok(projectExpenseService.getById(id, principal.getName()));
     }
 
     @GetMapping
-    public ResponseEntity<List<ProjectExpenseReadDto>> getAll() {
-        return ResponseEntity.ok(projectExpenseService.getAll());
+    public ResponseEntity<List<ProjectExpenseReadDto>> getAll(Principal principal) {
+        return ResponseEntity.ok(projectExpenseService.getAll(principal.getName()));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ProjectExpenseReadDto> update(
             @PathVariable Long id,
-            @RequestBody ProjectExpenseUpdateDto dto) {
-        return ResponseEntity.ok(projectExpenseService.update(id, dto));
+            @RequestBody ProjectExpenseUpdateDto dto,
+            Principal principal) {
+        return ResponseEntity.ok(projectExpenseService.update(id, dto, principal.getName()));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        projectExpenseService.delete(id);
+    public ResponseEntity<Void> delete(@PathVariable Long id, Principal principal) {
+        projectExpenseService.delete(id, principal.getName());
         return ResponseEntity.noContent().build();
     }
 }

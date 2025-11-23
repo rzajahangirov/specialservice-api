@@ -13,11 +13,13 @@ public interface ProjectContractorService {
 
     ProjectContractorReadDto create(ProjectContractorCreateDto dto, Principal principal);
 
-    ProjectContractorReadDto getById(Long id);
+    ProjectContractorReadDto getById(Long id, String userEmail);
 
-    List<ProjectContractorReadDto> getAll();
+    List<ProjectContractorReadDto> getAll(String userEmail);
 
-    ProjectContractorReadDto update(Long id, ProjectContractorUpdateDto dto);
+    ProjectContractorReadDto update(Long id, ProjectContractorUpdateDto dto, String userEmail);
 
-    void delete(Long id);
+    void delete(Long id, String userEmail);
+
+    List<ProjectContractorDto> getFilteredContractors(String contractorName, String userEmail);
 }

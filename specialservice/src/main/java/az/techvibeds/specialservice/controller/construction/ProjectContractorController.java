@@ -1,5 +1,6 @@
 package az.techvibeds.specialservice.controller.construction;
 
+import az.techvibeds.specialservice.dtos.projectcontractor.ProjectContractorDto;
 import az.techvibeds.specialservice.dtos.projectcontractor.ProjectContractorReadDto;
 import az.techvibeds.specialservice.dtos.projectcontractor.ProjectContractorUpdateDto;
 import az.techvibeds.specialservice.dtos.projectcontractor.ProjectContractorCreateDto;
@@ -29,27 +30,33 @@ public class ProjectContractorController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ProjectContractorReadDto> getById(@PathVariable Long id) {
-        return ResponseEntity.ok(contractorService.getById(id));
+    public ResponseEntity<ProjectContractorReadDto> getById(@PathVariable Long id, Principal principal) {
+        return ResponseEntity.ok(contractorService.getById(id, principal.getName()));
     }
 
     @GetMapping
-    public ResponseEntity<List<ProjectContractorReadDto>> getAll() {
-        return ResponseEntity.ok(contractorService.getAll());
+    public ResponseEntity<List<ProjectContractorReadDto>> getAll(Principal principal) {
+        return ResponseEntity.ok(contractorService.getAll(principal.getName()));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ProjectContractorReadDto> update(
             @PathVariable Long id,
-            @RequestBody ProjectContractorUpdateDto dto
+            @RequestBody ProjectContractorUpdateDto dto,
+            Principal principal
     ) {
-        return ResponseEntity.ok(contractorService.update(id, dto));
+        return ResponseEntity.ok(contractorService.update(id, dto, principal.getName()));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        contractorService.delete(id);
+    public ResponseEntity<Void> delete(@PathVariable Long id, Principal principal) {
+        contractorService.delete(id, principal.getName());
         return ResponseEntity.noContent().build();
+    }
+    @GetMapping("/filter")
+    public ResponseEntity<List<ProjectContractorDto>> filter(@RequestParam(required = false) String contractorName, Principal principal) {
+        List<ProjectContractorDto> projectContractorDtoList = contractorService.getFilteredContractors(contractorName, principal.getName());
+        return ResponseEntity.ok(projectContractorDtoList);
     }
 }
 

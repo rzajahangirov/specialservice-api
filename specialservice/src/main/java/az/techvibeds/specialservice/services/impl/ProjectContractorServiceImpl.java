@@ -53,41 +53,88 @@ public class ProjectContractorServiceImpl implements ProjectContractorService {
     }
 
     @Override
-    public ProjectContractorReadDto getById(Long id) {
+    public ProjectContractorReadDto getById(Long id, String userEmail) {
         ProjectContractor contractor = projectContractorRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Contractor not found"));
+        if (contractor.getCompany() == companyService.findByUserEmail(userEmail)) {
+            return modelMapper.map(contractor, ProjectContractorReadDto.class);
+        }else {
+            throw new RuntimeException("Access denied-> You are not allowed to access this contractor");
+        }
 
-        return modelMapper.map(contractor, ProjectContractorReadDto.class);
+
     }
 
     @Override
-    public List<ProjectContractorReadDto> getAll() {
-        return projectContractorRepository.findAll()
+    public List<ProjectContractorReadDto> getAll(String userEmail) {
+        return projectContractorRepository.findAllByCompany_Id(companyService.findByUserEmail(userEmail).getId())
                 .stream()
                 .map(c -> modelMapper.map(c, ProjectContractorReadDto.class))
                 .toList();
     }
 
     @Override
-    public ProjectContractorReadDto update(Long id, ProjectContractorUpdateDto dto) {
+    public ProjectContractorReadDto update(Long id, ProjectContractorUpdateDto dto, String userEmail) {
         ProjectContractor contractor = projectContractorRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Contractor not found"));
+        if (contractor.getCompany() == companyService.findByUserEmail(userEmail)) {
+            contractor.setName(dto.getName());
+            contractor.setContactPerson(dto.getContactPerson());
+            contractor.setPhoneNumber(dto.getPhoneNumber());
+            contractor.setEmail(dto.getEmail());
 
-        contractor.setName(dto.getName());
-        contractor.setContactPerson(dto.getContactPerson());
-        contractor.setPhoneNumber(dto.getPhoneNumber());
-        contractor.setEmail(dto.getEmail());
+            projectContractorRepository.save(contractor);
 
-        projectContractorRepository.save(contractor);
+            return modelMapper.map(contractor, ProjectContractorReadDto.class);
+        }else {
+            throw new RuntimeException("Access denied-> You are not allowed to access this contractor");
+        }
 
-        return modelMapper.map(contractor, ProjectContractorReadDto.class);
     }
 
     @Override
-    public void delete(Long id) {
-        if (!projectContractorRepository.existsById(id)) {
-            throw new RuntimeException("Contractor not found");
+    public void delete(Long id, String userEmail) {
+        ProjectContractor projectContractor = projectContractorRepository.findById(id).orElseThrow(() -> new RuntimeException("Contractor not found"));
+        if ( projectContractor.getCompany() == companyService.findByUserEmail(userEmail)) {
+            projectContractorRepository.delete(projectContractor);
         }
-        projectContractorRepository.deleteById(id);
     }
+
+    @Override
+    public List<ProjectContractorDto> getFilteredContractors(String contractorName, String userEmail) {
+
+        Long companyId = companyService.findByUserEmail(userEmail).getId();
+
+
+        List<ProjectContractor> contractorList =
+                projectContractorRepository.findAllByCompany_Id(companyId);
+
+        List<ProjectContractor> filteredContractors = new ArrayList<>();
+
+
+        if (contractorName != null && !contractorName.isEmpty()) {
+
+            for (ProjectContractor contractor : contractorList) {
+
+                boolean nameMatches =
+                        contractor.getName().toLowerCase()
+                                .contains(contractorName.toLowerCase());
+
+                if (nameMatches) {
+                    filteredContractors.add(contractor);
+                }
+            }
+
+            return contractorToDto(filteredContractors);
+        }
+
+        return contractorToDto(contractorList);
+    }
+    private List<ProjectContractorDto> contractorToDto(List<ProjectContractor> contractorList) {
+        return contractorList.stream()
+                .map(c -> modelMapper.map(c, ProjectContractorDto.class))
+                .toList();
+    }
+
+
 }

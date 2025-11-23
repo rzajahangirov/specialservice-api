@@ -3,13 +3,16 @@ package az.techvibeds.specialservice.services.impl;
 import az.techvibeds.specialservice.dtos.construction.ConstructionDto;
 import az.techvibeds.specialservice.dtos.constructionproject.ConstructionProjectCreateDto;
 import az.techvibeds.specialservice.dtos.constructionproject.ConstructionProjectReadDto;
+import az.techvibeds.specialservice.dtos.constructionproject.ConstructionProjectUpdateDto;
 import az.techvibeds.specialservice.dtos.projectexpense.ProjectExpenseReadDto;
 import az.techvibeds.specialservice.dtos.projectstage.ProjectStageReadDto;
 import az.techvibeds.specialservice.models.Company;
 import az.techvibeds.specialservice.models.ConstructionProject;
+import az.techvibeds.specialservice.repositories.ConstructionProjectRepository;
 import az.techvibeds.specialservice.repositories.ProjectContractorRepository;
 import az.techvibeds.specialservice.repositories.ProjectStatusRepository;
 import az.techvibeds.specialservice.services.*;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -17,6 +20,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,7 +33,7 @@ public class ConstructionServiceImpl implements ConstructionService {
     private final ProjectExpenseService projectExpenseService;
     private final ProjectContractorService projectContractorService;
     private final ModelMapper modelMapper;
-    private final ProjectStatusService projectStatusService;
+    private final ConstructionProjectRepository projectRepository;
     private final ProjectStatusRepository projectStatusRepository;
     private final ProjectContractorRepository projectContractorRepository;
 
@@ -71,10 +75,40 @@ public class ConstructionServiceImpl implements ConstructionService {
         constructionProject.setCompany(companyService.findByUserEmail(userEmail));
         constructionProject.setStatus(projectStatusRepository.findById(dto.getStatusId()).orElseThrow(() -> new RuntimeException("Status not found")));
         constructionProject.setProjectContractor(projectContractorRepository.findById(dto.getProjectContractorId()).orElseThrow(() -> new RuntimeException("Contractor not found")));
-        constructionProject.setExpenses(null);
-        constructionProject.setStages(null);//heleki bura tam bilinmir
+        constructionProject.setExpenses(new ArrayList<>());
+        constructionProject.setStages(new ArrayList<>());//heleki bura tam bilinmir
+        projectRepository.save(constructionProject);
         return mapToReadDto(constructionProject);
     }
+    @Override
+    public ConstructionProjectReadDto updateConstructionProject(Long id, ConstructionProjectUpdateDto dto, String userEmail) {
+
+        ConstructionProject entity = projectRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Project can not find: " + id));
+        if (entity.getCompany() != companyService.findByUserEmail(userEmail)) {
+            throw new EntityNotFoundException("Access denied");
+        }
+        entity.setName(dto.getName());
+        entity.setStartDate(dto.getStartDate());
+        entity.setEndDate(dto.getEndDate());
+        entity.setBudget(dto.getBudget());
+        entity.setProjectManager(dto.getProjectManager());
+
+        ConstructionProject savedEntity = projectRepository.save(entity);
+
+        return mapToReadDto(savedEntity);
+    }
+
+
+    @Override
+    public void deleteConstructionProject(Long id, String userEmail) {
+        ConstructionProject project = projectRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Project can not find: " + id));
+        if (project.getCompany() != companyService.findByUserEmail(userEmail)) {
+            throw new EntityNotFoundException("Access denied");
+        }
+        projectRepository.delete(project);
+    }
+
     private ConstructionProjectReadDto mapToReadDto(ConstructionProject constructionProject) {
         ConstructionProjectReadDto dto = modelMapper.map(constructionProject, ConstructionProjectReadDto.class);
         dto.setStatusName(constructionProject.getStatus().getName());
@@ -86,10 +120,14 @@ public class ConstructionServiceImpl implements ConstructionService {
                 .collect(Collectors.toList()));
         dto.setStagesList(constructionProject.getStages()
         .stream()
-                .map(projectStage -> modelMapper
-                .map(projectStage, ProjectStageReadDto.class))
+                .map(projectStage -> {
+                    ProjectStageReadDto projectStageReadDto = modelMapper.map(projectStage, ProjectStageReadDto.class);
+                    projectStageReadDto.setStagesStatus(projectStage.getStatus().name());
+                    return projectStageReadDto;
+                })
                 .collect(Collectors.toList()));
         return dto;
 
     }
+
 }

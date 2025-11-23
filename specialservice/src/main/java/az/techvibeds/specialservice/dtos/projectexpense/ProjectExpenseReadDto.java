@@ -15,5 +15,6 @@ public class ProjectExpenseReadDto {
     private String name;
     private BigDecimal amount;
     private LocalDate date;
+    private String projectName;
 }
 

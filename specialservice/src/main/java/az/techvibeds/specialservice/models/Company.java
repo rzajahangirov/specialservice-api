@@ -48,4 +48,19 @@ public class Company {
     @OneToMany(mappedBy = "company")
     private List<ProjectContractor> projectContractorList = new ArrayList<>();
 
+    @OneToMany(mappedBy = "company")
+    private List<ManufacturedProduct> products = new ArrayList<>();
+
+    @OneToMany(mappedBy = "company")
+    private List<SemiProduct> semiProducts = new ArrayList<>();
+
+    @OneToMany(mappedBy = "company")
+    private List<BillOfMaterial> billsOfMaterials = new ArrayList<>();
+
+    @OneToMany(mappedBy = "company")
+    private List<ProductionOrder> productionOrders = new ArrayList<>();
+
+    @OneToMany(mappedBy = "company")
+    private List<IndirectExpense> indirectExpenses = new ArrayList<>();
+
 }
