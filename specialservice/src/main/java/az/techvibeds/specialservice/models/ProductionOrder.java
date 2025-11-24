@@ -19,9 +19,10 @@ public class ProductionOrder {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private String id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", nullable = false)
-    private Product product;
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "manufactured_product_id", referencedColumnName = "id", nullable = false)
+    private ManufacturedProduct manufacturedProduct;
+
 
     @Column(nullable = false)
     private Integer quantity;

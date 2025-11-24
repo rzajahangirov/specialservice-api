@@ -18,6 +18,7 @@ import java.util.Date;
 @Table(name = "indirect_expenses")
 public class IndirectExpense {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private String id;
 
     @Column(nullable = false)

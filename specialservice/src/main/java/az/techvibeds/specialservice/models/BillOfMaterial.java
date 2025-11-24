@@ -6,7 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import java.util.Date;
+
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -23,14 +24,14 @@ public class BillOfMaterial {
     private String name;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", nullable = false)
-    private Product product;
+    @JoinColumn(name = "manufactured_product_id", nullable = false)
+    private ManufacturedProduct manufacturedProduct;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private BomStatus status;
 
-    private Date creationDate;
+    private LocalDate creationDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "company_id", nullable = false)
