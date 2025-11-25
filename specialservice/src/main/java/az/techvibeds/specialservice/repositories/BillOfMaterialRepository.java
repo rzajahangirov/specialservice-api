@@ -14,8 +14,10 @@ public interface BillOfMaterialRepository extends JpaRepository<BillOfMaterial, 
     List<BillOfMaterial> findAllByCompany_IdAndStatus(Long companyId, BomStatus status);
     @Query("SELECT b FROM BillOfMaterial b " +
             "WHERE b.company.id = :companyId " +
-            "AND LOWER(b.name) LIKE LOWER(CONCAT('%', :keyword, '%'))")
-    List<BillOfMaterial> searchByNameAndCompany(@Param("keyword") String keyword,
-                                                @Param("companyId") Long companyId);
+            "AND (CAST(b.id AS string) LIKE CONCAT('%', :keyword, '%') " +
+            "OR LOWER(b.name) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+    List<BillOfMaterial> searchByIdOrName(@Param("keyword") String keyword,
+                                          @Param("companyId") Long companyId);
+
 
 }

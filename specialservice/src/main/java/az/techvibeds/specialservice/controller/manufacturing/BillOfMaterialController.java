@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
+        import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -37,7 +37,7 @@ public class BillOfMaterialController {
         billOfMaterialService.deleteById(id, principal.getName());
         return ResponseEntity.noContent().build();
     }
-    @GetMapping("/filer")
+    @GetMapping("/filter")
     public ResponseEntity<List<BillOfMaterialReadDto>> getAllBillOfMaterialsFiler(@RequestParam(required = false) String status,
                                                                                   Principal principal) {
         List<BillOfMaterialReadDto> billOfMaterialReadDtoList = billOfMaterialService.getAllFilteredByStatus(status, principal);

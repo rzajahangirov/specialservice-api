@@ -61,7 +61,7 @@ public class BillOfMaterialServiceImpl implements BillOfMaterialService {
             throw new RuntimeException("Access denied");
         }
         billOfMaterial.setName(updateDto.getName());
-        billOfMaterial.setCreationDate(LocalDate.now());
+        billOfMaterial.setCreationDate(updateDto.getCreationDate());
         billOfMaterial.setManufacturedProduct(manufacturedProductRepository.findById(updateDto.getProductId()).orElseThrow(()-> new RuntimeException("Product not found")));
         billOfMaterial.setStatus(BomStatus.valueOf(updateDto.getBomStatus().toUpperCase()));
         billOfMaterialRepository.save(billOfMaterial);
@@ -93,7 +93,7 @@ public class BillOfMaterialServiceImpl implements BillOfMaterialService {
         Company company = companyService.findByUserEmail(principal.getName());
 
         List<BillOfMaterial> billOfMaterials =
-                billOfMaterialRepository.searchByNameAndCompany(keyword, company.getId());
+                billOfMaterialRepository.searchByIdOrName(keyword, company.getId());
         List<BillOfMaterialReadDto> billOfMaterialReadDtoList = new ArrayList<>();
         for (BillOfMaterial billOfMaterial : billOfMaterials) {
             billOfMaterialReadDtoList.add(mapToRead(billOfMaterial));

@@ -17,7 +17,7 @@ import java.util.Date;
 public class ProductionOrder {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private String id;
+    private Long id;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "manufactured_product_id", referencedColumnName = "id", nullable = false)

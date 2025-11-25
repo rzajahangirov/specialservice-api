@@ -1,5 +1,6 @@
 package az.techvibeds.specialservice.models;
 
+import az.techvibeds.specialservice.enums.RoleStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -13,4 +14,6 @@ public class Role {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
+    private String description;
+    private RoleStatus status;
 }

@@ -13,7 +13,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/production_order")
+@RequestMapping("/api/production-order")
 public class ProductionOrderController {
     private final ProductionOrderService productionOrderService;
 
