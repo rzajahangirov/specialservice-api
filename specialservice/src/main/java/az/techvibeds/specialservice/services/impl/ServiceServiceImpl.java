@@ -14,6 +14,8 @@ import az.techvibeds.specialservice.services.UnitService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 
+import java.security.Principal;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -129,7 +131,11 @@ public class ServiceServiceImpl implements ServiceService {
         dto.setServiceDescriptionDtoList(getServiceDescriptions(company));
         dto.setServiceExecutionStatusDtoList(getServiceExecutionStatus(company));
         dto.setAssigneeServiceDtoList(assigneeService.getAssigneeByCompany(company));
-
+        List<String> serviceStatusList = new ArrayList<>();
+        for (ServiceStatus serviceStatus : ServiceStatus.values()) {
+            serviceStatusList.add(serviceStatus.name());
+        }
+        dto.setServiceStatusList(serviceStatusList);
         return dto;
     }
 
@@ -172,5 +178,31 @@ public class ServiceServiceImpl implements ServiceService {
             throw new RuntimeException("Company does not match");
         }
     }
+
+    @Override
+    public List<ServiceExecutionStatusDto> getServiceByFiltered(Principal principal, String status, String keyword) {
+        Long companyId = companyService.findByUserEmail(principal.getName()).getId();
+
+        ServiceStatus serviceStatus = null;
+        if (status != null && !status.isBlank()) {
+            serviceStatus = ServiceStatus.valueOf(status);
+        }
+
+        String processedKeyword = (keyword != null && !keyword.isEmpty())
+                    ? "%" + keyword.toLowerCase() + "%"
+                    : null;
+
+        List<Service> services = serviceRepository.filterServices(companyId, serviceStatus, processedKeyword);
+
+        return services.stream()
+                .map(service -> {
+                    ServiceExecutionStatusDto dto = modelMapper.map(service, ServiceExecutionStatusDto.class);
+                    dto.setDtoAssignee(service.getAssignee() != null ? service.getAssignee().getName() : null);
+                    dto.setDtoStatus(service.getStatus() != null ? service.getStatus().name() : null);
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
+
 
 }

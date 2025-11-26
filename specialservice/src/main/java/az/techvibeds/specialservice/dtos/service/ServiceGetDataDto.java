@@ -18,4 +18,5 @@ public class ServiceGetDataDto {
     private List<ServiceDescriptionDto> serviceDescriptionDtoList;
     private List<ServiceExecutionStatusDto> serviceExecutionStatusDtoList;
     private List<AssigneeServiceDto> assigneeServiceDtoList;
+    private List<String> serviceStatusList;
 }

@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.List;
 
 
 @RestController
@@ -39,6 +40,10 @@ public class ServiceController {
     public ResponseEntity<ApiResponse> deleteService(@PathVariable Long id, Principal principal) {
         serviceService.delete(id, principal.getName());
         return ResponseEntity.ok(new ApiResponse("Service deleted", true));
+    }
+    @GetMapping("/filter")
+    public ResponseEntity<List<ServiceExecutionStatusDto>> getServiceExceptionsFiltered(Principal principal, @RequestParam(required = false) String status, @RequestParam(required = false) String keyword) {
+        return ResponseEntity.ok(serviceService.getServiceByFiltered(principal, status, keyword));
     }
 
 }

@@ -44,6 +44,9 @@ public class ProjectStageServiceImpl implements ProjectStageService {
 
     @Override
     public ProjectStageReadDto create(Long projectId, ProjectStageCreateDto dto) {
+        if (dto.getStageNumber() < 0){
+            throw new IllegalArgumentException("Invalid stage number");
+        }
         ConstructionProject project = constructionProjectService.findById(projectId);
 
         ProjectStage stage = modelMapper.map(dto, ProjectStage.class);
@@ -97,6 +100,12 @@ public class ProjectStageServiceImpl implements ProjectStageService {
 
     @Override
     public ProjectStageReadDto update(Long id, ProjectStageUpdateDto dto, String userEmail) {
+        if (dto.getStageNumber() < 0){
+            throw new IllegalArgumentException("Invalid stage number");
+        }
+        if (dto.getProgressPercentage() < 0){
+            throw new IllegalArgumentException("Invalid progress percentage");
+        }
         ProjectStage stage = projectStageRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Stage can not find"));
         if (stage.getProject().getCompany() == companyService.findByUserEmail(userEmail)) {

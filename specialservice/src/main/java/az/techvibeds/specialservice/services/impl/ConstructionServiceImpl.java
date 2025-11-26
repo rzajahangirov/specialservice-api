@@ -71,6 +71,9 @@ public class ConstructionServiceImpl implements ConstructionService {
 
     @Override
     public ConstructionProjectReadDto createConstructionProject(String userEmail, ConstructionProjectCreateDto dto) {
+        if (dto.getBudget().compareTo(BigDecimal.ZERO) < 0) {
+            throw new RuntimeException("Budget must be greater than zero");
+        }
         ConstructionProject constructionProject = modelMapper.map(dto, ConstructionProject.class);
         constructionProject.setCompany(companyService.findByUserEmail(userEmail));
         constructionProject.setStatus(projectStatusRepository.findById(dto.getStatusId()).orElseThrow(() -> new RuntimeException("Status not found")));
@@ -82,7 +85,9 @@ public class ConstructionServiceImpl implements ConstructionService {
     }
     @Override
     public ConstructionProjectReadDto updateConstructionProject(Long id, ConstructionProjectUpdateDto dto, String userEmail) {
-
+        if (dto.getBudget().compareTo(BigDecimal.ZERO) < 0) {
+            throw new RuntimeException("Budget must be greater than zero");
+        }
         ConstructionProject entity = projectRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Project can not find: " + id));
         if (entity.getCompany() != companyService.findByUserEmail(userEmail)) {

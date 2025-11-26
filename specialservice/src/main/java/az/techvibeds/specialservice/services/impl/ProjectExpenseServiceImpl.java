@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,7 +41,9 @@ public class ProjectExpenseServiceImpl implements ProjectExpenseService {
     }
     @Override
     public ProjectExpenseReadDto create(ProjectExpenseCreateDto dto) {
-
+        if (dto.getAmount().compareTo(BigDecimal.ZERO) < 0) {
+            throw new RuntimeException("Amount must be greater than zero");
+        }
         ProjectExpense expense = new ProjectExpense();
         expense.setName(dto.getName());
         expense.setAmount(dto.getAmount());
@@ -83,6 +86,9 @@ public class ProjectExpenseServiceImpl implements ProjectExpenseService {
 
     @Override
     public ProjectExpenseReadDto update(Long id, ProjectExpenseUpdateDto dto, String userEmail) {
+        if (dto.getAmount().compareTo(BigDecimal.ZERO) < 0) {
+            throw new RuntimeException("Budget must be greater than zero");
+        }
         ProjectExpense expense = projectExpenseRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Expense not found"));
 
